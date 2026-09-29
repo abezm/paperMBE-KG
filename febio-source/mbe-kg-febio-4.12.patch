@@ -1,0 +1,2511 @@
+diff --git a/FEBioMech/FEBioMechData.cpp b/FEBioMech/FEBioMechData.cpp
+index f345531..959ee10 100644
+--- a/FEBioMech/FEBioMechData.cpp
++++ b/FEBioMech/FEBioMechData.cpp
+@@ -34,6 +34,7 @@ SOFTWARE.*/
+ #include "FEDamageMaterialPoint.h"
+ #include "FEReactivePlasticityMaterialPoint.h"
+ #include "FEReactivePlasticDamageMaterialPoint.h"
++#include "FEKinematicGrowthZ.h"	// mod-ABC
+ #include "FEElasticMixture.h"
+ #include "FEElasticMultigeneration.h"
+ #include "FERigidMaterial.h"
+@@ -1734,6 +1735,145 @@ double FELogElemDeformationGradientZZ::value(FEElement& el)
+ 	return val / (double) nint;
+ }
+ 
++//-----------------------------------------------------------------------------
++
++double FELogElemGrowthDeformationGradientXX::value(FEElement& el)	// mod-ABC
++{
++	double val = 0.0;
++	int nint = el.GaussPoints();
++	for (int i=0; i<nint; ++i)
++	{
++		FEMaterialPoint& pt = *el.GetMaterialPoint(i);
++        	FEKinematicMaterialPointZ* pg = pt.ExtractData<FEKinematicMaterialPointZ>();
++		
++		val += (float) pg->m_Fg(0,0);
++		//val += pg.m_Fg(0,0);
++	}
++	return val / (double) nint;
++}
++
++//-----------------------------------------------------------------------------
++double FELogElemGrowthDeformationGradientYY::value(FEElement& el)	// mod-ABC
++{
++	double val = 0.0;
++	int nint = el.GaussPoints();
++	for (int i=0; i<nint; ++i)
++	{
++		FEMaterialPoint& pt = *el.GetMaterialPoint(i);
++        	FEKinematicMaterialPointZ* pg = pt.ExtractData<FEKinematicMaterialPointZ>();
++		
++		val += (float) pg->m_Fg(1,1);
++	}
++	return val / (double) nint;
++}
++
++//-----------------------------------------------------------------------------
++double FELogElemGrowthDeformationGradientZZ::value(FEElement& el)	// mod-ABC
++{
++	double val = 0.0;
++	int nint = el.GaussPoints();
++	for (int i=0; i<nint; ++i)
++	{
++		FEMaterialPoint& pt = *el.GetMaterialPoint(i);
++        	FEKinematicMaterialPointZ* pg = pt.ExtractData<FEKinematicMaterialPointZ>();
++		
++		val += (float) pg->m_Fg(2,2);
++	}
++	return val / (double) nint;
++}
++
++//-----------------------------------------------------------------------------
++double FELogElemGrowthDeformationGradientXY::value(FEElement& el)	// mod-ABC
++{
++	double val = 0.0;
++	int nint = el.GaussPoints();
++	for (int i=0; i<nint; ++i)
++	{
++		FEMaterialPoint& pt = *el.GetMaterialPoint(i);
++        	FEKinematicMaterialPointZ* pg = pt.ExtractData<FEKinematicMaterialPointZ>();
++		
++		val += (float) pg->m_Fg(0,1);
++	}
++	return val / (double) nint;
++}
++
++//-----------------------------------------------------------------------------
++double FELogElemGrowthDeformationGradientYX::value(FEElement& el)	// mod-ABC
++{
++	double val = 0.0;
++	int nint = el.GaussPoints();
++	for (int i=0; i<nint; ++i)
++	{
++		FEMaterialPoint& pt = *el.GetMaterialPoint(i);
++        	FEKinematicMaterialPointZ* pg = pt.ExtractData<FEKinematicMaterialPointZ>();
++		
++		val += (float) pg->m_Fg(1,0);
++	}
++	return val / (double) nint;
++}
++
++//-----------------------------------------------------------------------------
++double FELogElemGrowthDeformationGradientXZ::value(FEElement& el)	// mod-ABC
++{
++	double val = 0.0;
++	int nint = el.GaussPoints();
++	for (int i=0; i<nint; ++i)
++	{
++		FEMaterialPoint& pt = *el.GetMaterialPoint(i);
++        	FEKinematicMaterialPointZ* pg = pt.ExtractData<FEKinematicMaterialPointZ>();
++		
++		val += (float) pg->m_Fg(0,2);
++	}
++	return val / (double) nint;
++}
++
++//-----------------------------------------------------------------------------
++double FELogElemGrowthDeformationGradientZX::value(FEElement& el)	// mod-ABC
++{
++	double val = 0.0;
++	int nint = el.GaussPoints();
++	for (int i=0; i<nint; ++i)
++	{
++		FEMaterialPoint& pt = *el.GetMaterialPoint(i);
++        	FEKinematicMaterialPointZ* pg = pt.ExtractData<FEKinematicMaterialPointZ>();
++		
++		val += (float) pg->m_Fg(2,0);
++	}
++	return val / (double) nint;
++}
++
++//-----------------------------------------------------------------------------
++double FELogElemGrowthDeformationGradientYZ::value(FEElement& el)	// mod-ABC
++{
++	double val = 0.0;
++	int nint = el.GaussPoints();
++	for (int i=0; i<nint; ++i)
++	{
++		FEMaterialPoint& pt = *el.GetMaterialPoint(i);
++        	FEKinematicMaterialPointZ* pg = pt.ExtractData<FEKinematicMaterialPointZ>();
++		
++		val += (float) pg->m_Fg(1,2);
++	}
++	return val / (double) nint;
++}
++
++//-----------------------------------------------------------------------------
++double FELogElemGrowthDeformationGradientZY::value(FEElement& el)	// mod-ABC
++{
++	double val = 0.0;
++	int nint = el.GaussPoints();
++	for (int i=0; i<nint; ++i)
++	{
++		FEMaterialPoint& pt = *el.GetMaterialPoint(i);
++        	FEKinematicMaterialPointZ* pg = pt.ExtractData<FEKinematicMaterialPointZ>();
++		
++		val += (float) pg->m_Fg(2,1);
++	}
++	return val / (double) nint;
++}
++
++//----------------------------------------------------------------------------------
++
+ double FELogTotalDeformationGradient::value(FEElement& el)
+ {
+ 	double val = 0.0;
+diff --git a/FEBioMech/FEBioMechData.h b/FEBioMech/FEBioMechData.h
+index 2491881..225c909 100644
+--- a/FEBioMech/FEBioMechData.h
++++ b/FEBioMech/FEBioMechData.h
+@@ -910,6 +910,70 @@ public:
+ 	}
+ };
+ 
++//-----------------------------------------------------------------------------
++class FELogElemGrowthDeformationGradientXX : public FELogElemData	// mod-ABC
++{
++public:
++	FELogElemGrowthDeformationGradientXX(FEModel* pfem) : FELogElemData(pfem){}
++	double value(FEElement& el);
++};
++//-----------------------------------------------------------------------------
++class FELogElemGrowthDeformationGradientYY : public FELogElemData	// mod-ABC
++{
++public:
++	FELogElemGrowthDeformationGradientYY(FEModel* pfem) : FELogElemData(pfem){}
++	double value(FEElement& el);
++};
++//-----------------------------------------------------------------------------
++class FELogElemGrowthDeformationGradientZZ : public FELogElemData	// mod-ABC
++{
++public:
++	FELogElemGrowthDeformationGradientZZ(FEModel* pfem) : FELogElemData(pfem){}
++	double value(FEElement& el);
++};
++//-----------------------------------------------------------------------------
++class FELogElemGrowthDeformationGradientXY : public FELogElemData	// mod-ABC
++{
++public:
++	FELogElemGrowthDeformationGradientXY(FEModel* pfem) : FELogElemData(pfem){}
++	double value(FEElement& el);
++};
++//-----------------------------------------------------------------------------
++class FELogElemGrowthDeformationGradientXZ : public FELogElemData	// mod-ABC
++{
++public:
++	FELogElemGrowthDeformationGradientXZ(FEModel* pfem) : FELogElemData(pfem){}
++	double value(FEElement& el);
++};
++//-----------------------------------------------------------------------------
++class FELogElemGrowthDeformationGradientYZ : public FELogElemData	// mod-ABC
++{
++public:
++	FELogElemGrowthDeformationGradientYZ(FEModel* pfem) : FELogElemData(pfem){}
++	double value(FEElement& el);
++};
++//-----------------------------------------------------------------------------
++class FELogElemGrowthDeformationGradientYX : public FELogElemData	// mod-ABC
++{
++public:
++	FELogElemGrowthDeformationGradientYX(FEModel* pfem) : FELogElemData(pfem){}
++	double value(FEElement& el);
++};
++//-----------------------------------------------------------------------------
++class FELogElemGrowthDeformationGradientZX : public FELogElemData	// mod-ABC
++{
++public:
++	FELogElemGrowthDeformationGradientZX(FEModel* pfem) : FELogElemData(pfem){}
++	double value(FEElement& el);
++};
++//-----------------------------------------------------------------------------
++class FELogElemGrowthDeformationGradientZY : public FELogElemData	// mod-ABC
++{
++public:
++	FELogElemGrowthDeformationGradientZY(FEModel* pfem) : FELogElemData(pfem){}
++	double value(FEElement& el);
++};
++
+ //-----------------------------------------------------------------------------
+ class FELogElemDeformationGradientXX : public FELogElemData
+ {
+diff --git a/FEBioMech/FEBioMechModule.cpp b/FEBioMech/FEBioMechModule.cpp
+index a4f9403..64ea626 100644
+--- a/FEBioMech/FEBioMechModule.cpp
++++ b/FEBioMech/FEBioMechModule.cpp
+@@ -175,6 +175,7 @@ SOFTWARE.*/
+ #include "FELungMaterial.h"
+ #include "FEGrowthTensor.h"
+ #include "FEKinematicGrowth.h"
++#include "FEKinematicGrowthZ.h"	// mod-ABC
+ #include "FEYeoh.h"
+ #include "FEScaledElasticMaterial.h"
+ #include "FEScaledUncoupledMaterial.h"
+@@ -390,6 +391,7 @@ void FEBioMech::InitModule()
+     REGISTER_FECORE_CLASS(FELungMaterial, "lung");
+     REGISTER_FECORE_CLASS(FEKinematicGrowth, "kinematic growth");
+     REGISTER_FECORE_CLASS(FEScaledElasticMaterial, "scaled elastic");
++    REGISTER_FECORE_CLASS(FEKinematicGrowthZ, "KinematicGrowth");	// mod-ABC
+ 
+ 	// These materials are derived from FEElasticMaterial and use FEElasticMaterials
+ 	REGISTER_FECORE_CLASS(FEElasticMixture, "solid mixture");
+@@ -949,6 +951,10 @@ void FEBioMech::InitModule()
+ 	// 2O continuum fields
+ 	REGISTER_FECORE_CLASS(FEPlotElementsnorm, "s norm");
+ 
++	REGISTER_FECORE_CLASS(FEPlotElastinDamage, "elastin damage");	// MOD-ABC
++	REGISTER_FECORE_CLASS(FEPlotCollagenDamage, "collagen damage");	// MOD-ABC
++	REGISTER_FECORE_CLASS(FEPlotCurrentStrainEnergyZ, "current strain energy density");	// MOD-ABC
++
+ 	//-----------------------------------------------------------------------------
+ 	// Derived from FELogNodeData
+ 	REGISTER_FECORE_CLASS(FENodeXPos, "x");
+@@ -1080,6 +1086,15 @@ void FEBioMech::InitModule()
+ 	REGISTER_FECORE_CLASS(FELogElemDeformationGradientZX, "Fzx");
+ 	REGISTER_FECORE_CLASS(FELogElemDeformationGradientZY, "Fzy");
+ 	REGISTER_FECORE_CLASS(FELogElemDeformationGradientZZ, "Fzz");
++	REGISTER_FECORE_CLASS(FELogElemGrowthDeformationGradientXX, "Fgxx");	// mod-ABC
++	REGISTER_FECORE_CLASS(FELogElemGrowthDeformationGradientYY, "Fgyy");	// mod-ABC
++	REGISTER_FECORE_CLASS(FELogElemGrowthDeformationGradientZZ, "Fgzz");	// mod-ABC
++	REGISTER_FECORE_CLASS(FELogElemGrowthDeformationGradientXY, "Fgxy");	// mod-ABC
++	REGISTER_FECORE_CLASS(FELogElemGrowthDeformationGradientYX, "Fgyx");	// mod-ABC
++	REGISTER_FECORE_CLASS(FELogElemGrowthDeformationGradientXZ, "Fgxz");	// mod-ABC
++	REGISTER_FECORE_CLASS(FELogElemGrowthDeformationGradientZX, "Fgzx");	// mod-ABC
++	REGISTER_FECORE_CLASS(FELogElemGrowthDeformationGradientZY, "Fgzy");	// mod-ABC
++	REGISTER_FECORE_CLASS(FELogElemGrowthDeformationGradientYZ, "Fgyz");	// mod-ABC
+ 	REGISTER_FECORE_CLASS_T(FELogElemElasticity, 0, "cxxxx");
+ 	REGISTER_FECORE_CLASS_T(FELogElemElasticity, 1, "cxxyy");
+ 	REGISTER_FECORE_CLASS_T(FELogElemElasticity, 2, "cyyyy");
+diff --git a/FEBioMech/FEBioMechPlot.cpp b/FEBioMech/FEBioMechPlot.cpp
+index 68b9812..9ec4315 100644
+--- a/FEBioMech/FEBioMechPlot.cpp
++++ b/FEBioMech/FEBioMechPlot.cpp
+@@ -76,6 +76,7 @@ SOFTWARE.*/
+ #include <FEBioMech/FEEdgeToSurfaceSlidingContact.h>
+ #include "FEIdealGasPressure.h"
+ #include "FEBodyForce.h"
++#include "FEKinematicGrowthZ.h"	// MOD-ABC
+ 
+ //=============================================================================
+ //                            N O D E   D A T A
+@@ -3386,6 +3387,8 @@ bool FEPlotUT4NodalStresses::Save(FEDomain& dom, FEDataStream& a)
+ 	return true;
+ }
+ 
++
++
+ //==============================================================================
+ //                  R I G I D   B O D Y   D A T A
+ //==============================================================================
+@@ -5215,3 +5218,71 @@ bool FEPlotTotalEnergy::Save(FEDomain& dom, FEDataStream& a)
+ 	}
+ 	return false;
+ }
++// MOD-ABC ------------------------------------------------------------------------------------------
++class FEElastinDamageVal {
++public:
++	double operator()(const FEMaterialPoint& mp) {
++		const FEKinematicMaterialPointZ* pt = mp.ExtractData<FEKinematicMaterialPointZ>();
++		return (pt ? pt->m_elas_dmg : 1.0);
++	}
++};
++
++class FECollagenDamageVal {
++public:
++	double operator()(const FEMaterialPoint& mp) {
++		const FEKinematicMaterialPointZ* pt = mp.ExtractData<FEKinematicMaterialPointZ>();
++		return (pt ? pt->m_coll_dmg : 1.0);
++	}
++};
++
++// 2. Implementación nativa usando writeAverageElementValue
++bool FEPlotElastinDamage::Save(FEDomain& dom, FEDataStream& a)
++{
++	FEKinematicGrowthZ* pme = dom.GetMaterial()->ExtractProperty<FEKinematicGrowthZ>();
++	if (pme == nullptr) return false;
++
++	writeAverageElementValue<double>(dom, a, FEElastinDamageVal());
++	return true;
++}
++
++bool FEPlotCollagenDamage::Save(FEDomain& dom, FEDataStream& a)
++{
++	FEKinematicGrowthZ* pme = dom.GetMaterial()->ExtractProperty<FEKinematicGrowthZ>();
++	if (pme == nullptr) return false;
++
++	writeAverageElementValue<double>(dom, a, FECollagenDamageVal());
++	return true;
++}
++
++class FECurrentStrainEnergyVal {
++    FEElasticMaterial* m_mat; 
++public:
++    FECurrentStrainEnergyVal(FEElasticMaterial* mat) : m_mat(mat) {}
++
++    double operator()(const FEMaterialPoint& mp) {
++        if (m_mat) {
++            FEMaterialPoint& mp_nc = const_cast<FEMaterialPoint&>(mp);
++            FEElasticMaterialPoint* ep = mp_nc.ExtractData<FEElasticMaterialPoint>();
++            FEKinematicMaterialPointZ* pt = mp_nc.ExtractData<FEKinematicMaterialPointZ>();
++            
++            if (ep && pt) {
++                double W_ref = m_mat->StrainEnergyDensity(mp_nc);
++                double W_cur = W_ref / ep->m_J;
++                
++                pt->m_Wt = W_cur;
++                
++                return W_cur;
++            }
++        }
++        return 0.0;
++    }
++};
++
++bool FEPlotCurrentStrainEnergyZ::Save(FEDomain& dom, FEDataStream& a)
++{
++    FEElasticMaterial* pmat = dom.GetMaterial()->ExtractProperty<FEElasticMaterial>();
++    if (pmat == nullptr) return false;
++
++    writeAverageElementValue<double>(dom, a, FECurrentStrainEnergyVal(pmat));
++    return true;
++}
+diff --git a/FEBioMech/FEBioMechPlot.h b/FEBioMech/FEBioMechPlot.h
+index ad07c8b..cdbdc8b 100644
+--- a/FEBioMech/FEBioMechPlot.h
++++ b/FEBioMech/FEBioMechPlot.h
+@@ -1671,6 +1671,38 @@ public:
+ 	bool Save(FEDomain& dom, FEDataStream& a);
+ };
+ 
++// MOD-ABC --------------------------------------------------------------------------------
++class FEPlotElastinDamage : public FEPlotDomainData
++{
++public:
++	FEPlotElastinDamage(FEModel* pfem) : FEPlotDomainData(pfem, PLT_FLOAT, FMT_ITEM) {}
++	bool Save(FEDomain& dom, FEDataStream& a) override;
++};
++
++class FEPlotCollagenDamage : public FEPlotDomainData
++{
++public:
++	FEPlotCollagenDamage(FEModel* pfem) : FEPlotDomainData(pfem, PLT_FLOAT, FMT_ITEM) {}
++	bool Save(FEDomain& dom, FEDataStream& a) override;
++};
++
++/*
++class FEPlotCurrentStrainEnergyZ : public FEPlotDomainData
++{
++public:
++	FEPlotCurrentStrainEnergyZ(FEModel* pfem) : FEPlotDomainData(pfem, PLT_FLOAT, FMT_ITEM) {}
++	bool Save(FEDomain& dom, FEDataStream& a) override;
++};
++*/
++
++//! Strain energy at current time
++class FEPlotCurrentStrainEnergyZ : public FEPlotDomainData
++{
++public:
++    FEPlotCurrentStrainEnergyZ(FEModel* pfem) : FEPlotDomainData(pfem, PLT_FLOAT, FMT_ITEM){}
++    bool Save(FEDomain& dom, FEDataStream& a);
++};
++
+ //=============================================================================
+ //                            E D G E   D A T A
+ //=============================================================================
+diff --git a/FEBioMech/FEElasticMaterialPoint.cpp b/FEBioMech/FEElasticMaterialPoint.cpp
+index bfe6ecd..5348b5e 100644
+--- a/FEBioMech/FEElasticMaterialPoint.cpp
++++ b/FEBioMech/FEElasticMaterialPoint.cpp
+@@ -39,6 +39,7 @@ FEElasticMaterialPoint::FEElasticMaterialPoint(FEMaterialPointData* mp) : FEMate
+     m_buncoupled = false;
+     m_Wt = m_Wp = 0;
+     m_p = 0;
++    m_svo = 0.0;		//mod-ABC
+ }
+ 
+ //-----------------------------------------------------------------------------
+@@ -64,6 +65,8 @@ void FEElasticMaterialPoint::Init()
+     m_Wt = m_Wp = 0;
+ 
+     m_p = 0;
++
++    m_svo = 0.0;	//mod-ABC
+     
+ 	// don't forget to initialize the base class
+     FEMaterialPointData::Init();
+@@ -73,7 +76,7 @@ void FEElasticMaterialPoint::Init()
+ void FEElasticMaterialPoint::Serialize(DumpStream& ar)
+ {
+ 	FEMaterialPointData::Serialize(ar);
+-    ar & m_F & m_J & m_s & m_v & m_a & m_L & m_Wt & m_Wp & m_p;
++    ar & m_F & m_J & m_s & m_v & m_a & m_L & m_Wt & m_Wp & m_p & m_svo;	//mod-ABC
+ 	ar & m_buncoupled;
+ }
+ 
+diff --git a/FEBioMech/FEElasticMaterialPoint.h b/FEBioMech/FEElasticMaterialPoint.h
+index d3d8bd7..3a8d2d7 100644
+--- a/FEBioMech/FEElasticMaterialPoint.h
++++ b/FEBioMech/FEElasticMaterialPoint.h
+@@ -100,4 +100,8 @@ public:
+     
+     // previous time data
+     double      m_Wp;       //!< strain energy density
++
++    // original (o) homeostatic data (mod-ABC)
++    double	m_svo;       //!< volumetric stress at o
++
+ };
+diff --git a/FEBioMech/FEKinematicGrowthZ.cpp b/FEBioMech/FEKinematicGrowthZ.cpp
+new file mode 100755
+index 0000000..db04644
+--- /dev/null
++++ b/FEBioMech/FEKinematicGrowthZ.cpp
+@@ -0,0 +1,1709 @@
++#include "stdafx.h"
++#include "FEKinematicGrowthZ.h"
++#include "FEUncoupledMaterial.h"
++#include <FECore/FECoreKernel.h>
++#include <FECore/FEModel.h>
++#include <FECore/DumpStream.h>
++#include <FECore/log.h>
++#define _USE_MATH_DEFINES				// to introduce pi constant (1/2)
++//#include <math.h>					// to introduce pi constant (2/2)
++#include <cmath>					// Replaced math.h with cmath for std::abs
++#include "FECore/log.h"				// to print to log file and/or screen
++#include <limits>
++#include <algorithm>                    		// Added for std::min
++
++//-----------------------------------------------------------------------------
++BEGIN_FECORE_CLASS(FEKinematicGrowthZ, FEElasticMaterial)
++
++	// 1. define the material properties
++	ADD_PROPERTY(m_Base, "elastic");
++	
++	// ##############  Hyperelastic model ##############
++	ADD_PARAMETER(m_mu    , FE_RANGE_GREATER_OR_EQUAL(0.0), "c_e"); 
++	ADD_PARAMETER(m_cm    , FE_RANGE_GREATER_OR_EQUAL(0.0), "c_m");
++	ADD_PARAMETER(m_dm    , FE_RANGE_GREATER(0.0), "d_m");
++	ADD_PARAMETER(m_cc    , FE_RANGE_GREATER_OR_EQUAL(0.0), "c_c");
++	ADD_PARAMETER(m_dc    , FE_RANGE_GREATER(0.0), "d_c");
++	//ADD_PARAMETER(m_cct   , FE_RANGE_GREATER_OR_EQUAL(0.0), "c_ct");
++	//ADD_PARAMETER(m_dct   , FE_RANGE_GREATER(0.0), "d_ct");
++	//ADD_PARAMETER(m_ccz   , FE_RANGE_GREATER_OR_EQUAL(0.0), "c_cz");
++	//ADD_PARAMETER(m_dcz   , FE_RANGE_GREATER(0.0), "d_cz");
++	ADD_PARAMETER(m_alpha , "alpha");
++	
++	// ############## mass fractions ###################
++	
++	// constituent mass fractions (elastin, collagen)
++	ADD_PARAMETER(m_phieo, FE_RANGE_CLOSED(0.0,1.0), "f_e"); 
++	ADD_PARAMETER(m_phico, FE_RANGE_CLOSED(0.0,1.0), "f_c"); 
++	
++	// collagen relative fractions 
++	ADD_PARAMETER(m_betaz, FE_RANGE_CLOSED(0.0,1.0), "beta_z"); 
++	ADD_PARAMETER(m_betat, FE_RANGE_CLOSED(0.0,1.0), "beta_t"); 
++	
++	
++	// ##############  Kinematic Growth model ##############
++	ADD_PARAMETER(m_kPar, FE_RANGE_GREATER(0.0), "k_parameter");			// 2. GAIN*RATE parameter
++	ADD_PARAMETER(m_sgrSta, FE_RANGE_GREATER_OR_EQUAL(0.0), "gr_start");		// 3. initial G&R time
++	ADD_PARAMETER(m_sgrEnd, FE_RANGE_GREATER_OR_EQUAL(0.0), "gr_end");		// FINAL G&R time
++	
++	ADD_PARAMETER(m_MBE_opt,  "MBE");						// 4. option for MBE G&R
++	ADD_PARAMETER(m_asym,     "asymm_aneurysm");					// 5. type of aneurysm
++	ADD_PARAMETER(m_lo_opt,   "lo_opt");						// option for stretch calc
++	ADD_PARAMETER(m_writeRes, "pr_opt");						// option for printing 
++	
++	ADD_PARAMETER(m_kJ, "k_J"); // penalizer (incompress)
++	//ADD_PARAMETER(m_mu, "C_1");  // shear modulus
++
++	// ############## deposition stretches ##############
++	ADD_PARAMETER(m_Get, FE_RANGE_GREATER_OR_EQUAL(0.0), "Ge_t");
++	ADD_PARAMETER(m_Gez, FE_RANGE_GREATER_OR_EQUAL(0.0), "Ge_z");
++	ADD_PARAMETER(m_Gm,  FE_RANGE_GREATER_OR_EQUAL(0.0), "Gm");
++	ADD_PARAMETER(m_Gc,  FE_RANGE_GREATER_OR_EQUAL(0.0), "Gc");
++	
++	ADD_PARAMETER(m_muout, FE_RANGE_CLOSED(0.0,1.0), "mu_out"); 
++	ADD_PARAMETER(m_muin,  FE_RANGE_CLOSED(0.0,1.0), "mu_in"); 
++	ADD_PARAMETER(m_ccout, FE_RANGE_CLOSED(0.0,1.0), "cc_out"); 
++	ADD_PARAMETER(m_ccin,  FE_RANGE_CLOSED(0.0,1.0), "cc_in");
++
++	ADD_PARAMETER(m_hypSel, "hyperels_mod"); // 6. hyperelastic model option 
++	ADD_PARAMETER(m_degr,   "ec_degrad"); // 7. properties are degraded w this option 
++	ADD_PARAMETER(m_alpm,   "alp_update"); // 8. alpha is updated w this option 
++	
++	// ############## secant tangent option ##############
++	ADD_PARAMETER(m_secant_tangent, "secant_tangent");	// 8. secant tangent
++	
++	// ############## geometry of cylinder (for degradation) ##############
++	ADD_PARAMETER(m_z_center, "z_center");
++	ADD_PARAMETER(m_z_spread, "z_spread");
++	ADD_PARAMETER(m_nuz, "z_nu");
++	ADD_PARAMETER(m_nut, "t_nu");
++	ADD_PARAMETER(m_pif, "t_pif");
++	
++	// ## ACTIVE STRESS ##
++	//ADD_PARAMETER(m_Tmax, FE_RANGE_GREATER_OR_EQUAL(0.0), "T_max");
++	//ADD_PARAMETER(m_lamM, FE_RANGE_GREATER(0.0), "lam_M"); // 
++	//ADD_PARAMETER(m_lam0, FE_RANGE_GREATER(0.0), "lam_0"); // 
++	//ADD_PARAMETER(m_cb,   FE_RANGE_GREATER(0.0), "c_b");   // 
++
++END_FECORE_CLASS();
++
++//-----------------------------------------------------------------------------
++FEKinematicMaterialPointZ::FEKinematicMaterialPointZ(FEMaterialPointData* mp) : FEMaterialPointData(mp)
++{
++	m_sed = 0.0;
++	m_sedp = 0.0;
++	
++	m_Jp = 1.0;
++	m_J = 1.0;
++	m_Fg.unit();
++	m_Fgp.unit();
++	
++	m_svo = 0.0;
++	
++	m_Fo.unit();
++	
++	m_Wt = 0.0;
++	
++}
++
++//-----------------------------------------------------------------------------
++//! Create a shallow copy of the material point data
++FEMaterialPointData* FEKinematicMaterialPointZ::Copy()
++{
++	FEKinematicMaterialPointZ* pt = new FEKinematicMaterialPointZ(*this);
++	if (m_pNext) pt->m_pNext = m_pNext->Copy();
++	return pt;
++}
++
++//-----------------------------------------------------------------------------
++//! Initializes material point data.
++void FEKinematicMaterialPointZ::Init()
++{
++	// intialize data to zero
++	m_Se.zero();
++	m_Sep.zero();
++	m_sed = 0.0;
++    m_sedp = 0.0;
++    m_Jp = 1.0;
++    m_J = 1.0;
++    m_Fg.unit();
++    m_Fgp.unit();
++    
++    m_Fo.unit();
++    
++    m_svo = 0.0;	
++    
++    m_elas_dmg = 1.0;
++    m_coll_dmg = 1.0;	
++    
++    m_Wt = 0.0;
++
++    // don't forget to initialize the base class
++    FEMaterialPointData::Init();
++}
++
++//-----------------------------------------------------------------------------
++//! Update material point data.
++void FEKinematicMaterialPointZ::Update(const FETimeInfo& timeInfo)
++{
++
++	// the elastic stress stored in pt is the Cauchy stress.
++	// however, we need to store the 2nd PK stress
++	m_Sep = m_Se;
++    m_sedp = m_sed;
++    m_Jp = m_J;	// updates J_n at end of current timestep
++    m_Fgp = m_Fg;	// updates Fg_n at end of current timestep
++    
++    m_Wt = m_sed/m_J;
++    
++    // don't forget to call the base class
++    FEMaterialPointData::Update(timeInfo);
++}
++
++//-----------------------------------------------------------------------------
++//! Serialize data to the archive
++void FEKinematicMaterialPointZ::Serialize(DumpStream& ar)
++{
++    FEMaterialPointData::Serialize(ar);
++	ar & m_Se;
++	ar & m_Sep;
++	//ar & m_H & m_Hp;
++    ar & m_sed & m_sedp;
++    //ar & m_alpha & m_alphap;
++    ar & m_J & m_Jp;
++    ar & m_Fg & m_Fgp;
++    ar & m_svo;
++    ar & m_Fo;	
++    
++    ar & m_elas_dmg & m_coll_dmg;
++    
++    ar & m_Wt;
++}
++
++//-----------------------------------------------------------------------------
++//! constructor
++FEKinematicGrowthZ::FEKinematicGrowthZ(FEModel* pfem) : FEElasticMaterial(pfem)
++{
++	m_Base = 0;
++}
++
++//-----------------------------------------------------------------------------
++//! get the elastic base material \todo I want to call this GetElasticMaterial, but this name is being used
++FEElasticMaterial* FEKinematicGrowthZ::GetBaseMaterial()
++{ 
++	return m_Base; 
++}
++
++//-----------------------------------------------------------------------------
++//! Set the base material
++void FEKinematicGrowthZ::SetBaseMaterial(FEElasticMaterial* pbase)
++{ 
++	m_Base = pbase; 
++}
++
++//-----------------------------------------------------------------------------
++//! Create material point data for this material
++FEMaterialPointData* FEKinematicGrowthZ::CreateMaterialPointData()
++{
++	return new FEKinematicMaterialPointZ(m_Base->CreateMaterialPointData());
++}
++
++//-----------------------------------------------------------------------------
++//! Stress function
++mat3ds FEKinematicGrowthZ::Stress(FEMaterialPoint& mp)
++{
++	// get machine epsilon 
++	double eps = std::numeric_limits<double>::epsilon();
++	
++	// Get current time, end time and time-step
++    	double t = GetFEModel()->GetTime().currentTime;
++
++	double dt = GetTimeInfo().timeIncrement;
++	
++	//double endtime = GetFEModel()->GetCurrentStep()->m_tend;
++
++	//double endtime = 11.0;				// 11.0 | 31.0-32.0 (TEVG)
++	double partialtime = m_sgrEnd; //endtime;			// partialtime <= endtime | 10.0 | 10.4 (for TI calculation)
++	double sgr = std::min(t,partialtime);		// min(t,partialtime) | min(t,9.0)
++	
++	
++	if (dt == 0) return mat3ds(0, 0, 0, 0, 0, 0);
++    
++	// get the elastic part
++	FEElasticMaterialPoint& ep = *mp.ExtractData<FEElasticMaterialPoint>();
++
++	// get the KinematicGrowth point data
++	FEKinematicMaterialPointZ& pt = *mp.ExtractData<FEKinematicMaterialPointZ>();
++	
++	// Get Jacobian of deformation gradient, J_n (previous time-step)
++	double Jp = pt.m_Jp;	// Fg_n
++	
++	// Get total deformation gradient, F_n+1
++	mat3d F = ep.m_F;		// F_n+1
++	double J = ep.m_J;		// J_n+1 
++	pt.m_J = J;			// saves J_n+1 to later update Jp at the end of current timestep
++	
++	// Get growth deformation gradient, Fg_n+1
++	mat3dd I(1.0);				// identity (2nd order)
++	mat3d  Fg = pow(J,1.0/3.0)*I;		// isotropic-volumetric growth ONLY
++	mat3d  Fgi = Fg.inverse();		// Fg_n+1 inverse
++	double Jgi = Fgi.det();		// 1/J_n
++	pt.m_Fg = Fg;				// saves Fg_n+1 to later update Jp at the end of current timestep
++	
++	// elastic deformation gradient, Fe_n+1 (for elastic stress calculation)
++	mat3d Fe; // = et.m_F*Fgi;		// Note: px.m_Fe is Fe_n
++	//double Je = et.m_J*Jgi;
++	
++	mat3d Fo = pt.m_Fo;
++	
++	Fe = F*Fgi;		// 
++	if (m_lo_opt && t > m_sgrSta + eps){
++		Fe = Fo;	// elastic strain does not evolve during G&R of aneurysms?
++	}
++	
++	// =======================================
++	
++	// substitute elastic deformation in material point
++	//ep.m_F = Fe;
++	//ep.m_J = Je;
++
++	// ------------------------------------------------
++	// MATERIAL PARAMETERS ----------------------------
++	//double mu = m_mu; //100.0;	// NEO-HOOKE / ST.VENANT-K (UNIAXIAL EXAMPLE)
++
++	// mass/volume fractions
++	///*
++	double phieo = m_phieo;
++	double phico = m_phico;
++	double phimo = 1.0 - phieo - phico;
++	if (phieo + phico > 1.0){
++		phieo = 1.0; //0.34;
++		phico = 1.0; //0.33;
++		phimo = 1.0; //
++	}
++	//*/
++	//double phieo = 1.0; //0.34;
++	//double phico = 1.0; //0.33;
++	//double phimo = 1.0; //
++	//
++	//
++	
++	// --- TO PRINT ---
++	//feLog("Mass fractions: Elastin(phieo)=%f, Collagen(phico)=%f, SMC(phimo)=%f\n", phieo, phico, phimo);
++	// -------------------------
++
++
++	double mu  = m_mu; 
++	
++	double cm = m_cm;
++	double dm = m_dm;
++	double cc = m_cc;
++	double dc = m_dc;
++	
++	//double ccz = m_ccz;
++	//double dcz = m_dcz;
++	//double cct = m_cct;
++	//double dct = m_dct;
++	
++	double Gm = m_Gm;
++	double Gc = m_Gc;
++	double Get = m_Get;
++	double Gez = m_Gez;
++	
++	double betat = m_betat;		// 0.045
++	double betaz = m_betaz;		// 0.062
++	
++	double betad = 0.5*(1.0 - betat - betaz);
++	if (betat + betaz > 1.0){
++		betat = 1.0; 
++		betaz = 1.0; 
++		betad = 0.5; 
++	}
++	
++	double alpha_d = m_alpha;
++	
++	// ======================================
++	/*
++	// KNOCKOUTS
++	//double phieo = 0.34;
++	//double phico = 0.33;
++	//double phimo = 1.0 - phieo - phico;
++	
++	double mu = 89.71; 
++	double Gm = m_Gm; //1.20;  // dep stretch smc
++	double Gc = m_Gc; //1.25; // dep stretch col
++	//double Get = 1.90; //m_Get;		
++	//double Gez = 1.62; //m_Gez;
++	
++	// ---------------
++	double cm = 261.4;	// kPa
++	double dm = 0.24;
++	double cc = 234.9;	// kPa
++	double dc = 4.08;
++	double alpha_d = 29.9;	// deg
++	//
++	double betat = 0.056;	// orientation fractions for collagen
++	double betaz = 0.067;
++	*/
++	//======================================
++	/*
++	// TORTUOSITY
++	//double phieo = 0.331;
++	//double phimo = 0.265;
++	//double phico = 0.404;
++
++	double mu = 88.46;									// 88.46
++
++	double alpha_d = 38.1; //0.665;							// 0.615 (110) / 0.665 (120)
++
++	double cm = 419.1;									// 419.1
++	double dm = 0.105;									// 0.105
++	double Gm = m_Gm; //1.198;									// 1.198
++	double cc = 1278.;									// 1278.
++	double dc = 11.10;									// 11.10
++	double Gc = m_Gc; //1.092;								// 1.092
++	
++	//double Get = 2.153;			// 1.993 (110) / 2.153 (120)
++	//double Gez = 1.572;			// 1.572
++
++	double betat = 0.045;		// 0.045
++	double betaz = 0.062;		// 0.062
++	*/
++	
++	// ======================================
++	//
++	/*	
++	// ELASTIN/COLL. REDUCTION FACTORS
++	double m_muin; double m_ccin;
++	if (m_asym == 1) {	// A-symmetric aneurysms
++		m_muin = 0.50; 
++		m_ccin = 0.40;	
++	}
++	if (m_asym == 0) {	// AXI-symmetric aneurysms
++		m_muin = 0.70; 
++		m_ccin = 0.70;	
++	
++	}
++	*/
++	///*
++	//double m_muout = 1.00;		// 1.00 (alone) | 1.00-0.30 = 0.70 (aging) | 1.00 (hypertension) | 1.00 (alone & contractility (50))
++	//double m_muin  = 0.40;		// 0.38 (alone) | 0.68-0.30 = 0.38 (aging) | 0.63 (hypertension) | 0.30 (alone & contractility (50))
++	
++	//double m_ccout = 1.00;
++	//double m_ccin  = 0.60;		// 0.77 (alone) | 0.91 (aging) | 0.91 (hypertension)
++	//*/
++	// ------------------------------------------------
++	double aexp = 1.0;									// 1.0 (KNOCKOUTS) | 0.0 (CMAME and TORTUOSITY)
++	double alpha = alpha_d*M_PI/180;	// rad
++	
++	// retrieve material position
++	vec3d X = mp.m_r0;
++	vec3d Xcl = {0.0, 0.0, X.z};				// center line
++	vec3d NX = {X.x-Xcl.x,X.y-Xcl.y,X.z-Xcl.z};		// radial vector
++	double ro = sqrt(NX*NX);
++	NX /= ro;
++
++	// retrieve local element basis directions
++	//vec3d N[3];
++
++	// pointwise, consistent with mesh generated with Matlab script
++	//N[2] = {0.0, 0.0, 1.0}; N[2] = N[2]/sqrt(N[2]*N[2]);	// axial = d(Xcl)/d(z)
++	//N[1] = {-NX.y, NX.x, NX.z};				// circu.
++	//N[0] = N[2]^N[1];					// radial
++	//N[2] = {1.0, 0.0, 0.0}; N[2] = N[2]/sqrt(N[2]*N[2]);	// axial = d(Xcl)/d(z)
++	//N[1] = {0.0, 1.0, 0.0}; N[1] = N[1]/sqrt(N[1]*N[1]);	// circumferential
++	
++	
++	// get the local coordinate systems
++	mat3d Q = GetLocalCS(mp);
++
++	// Unified fiber directions 
++	vec3d Nz(Q(0,2),Q(1,2),Q(2,2)); 	// axial
++	//vec3d Nt(Q(0,1),Q(1,1),Q(2,1)); 	// circ
++	vec3d Nt = vec3d(-NX.y, NX.x, 0.0);  // circ
++	vec3d Nr = Nz ^ Nt; 			// radial
++	double lenz = Nz.norm(); double lent = Nt.norm(); double lenr = Nr.norm();
++	if (lenz > 1e-12) Nz /= lenz;
++	if (lent > 1e-12) Nt /= lent;
++	if (lenr > 1e-12) Nr /= lenr;
++	vec3d N[3] = {Nr, Nt, Nz};
++	
++	/*
++	if (m_degr==0) {
++    		// Copy the local element basis directions to n
++		//vec3d n[2];
++    		//n[0].x = Q[0][0]; n[0].y = Q[1][0]; n[0].z = Q[2][0];	// axial? 	
++    		//n[1].x = Q[0][1]; n[1].y = Q[1][1]; n[1].z = Q[2][1];	// circ.?
++    		N[2].x = Q[0][0]; N[2].y = Q[1][0]; N[2].z = Q[2][0];	// axial? 	
++    		N[1].x = Q[0][1]; N[1].y = Q[1][1]; N[1].z = Q[2][1];	// circ.?
++    		Np = N[2]*cos(alpha) + N[1]*sin(alpha); 
++		Nn = N[2]*cos(alpha) - N[1]*sin(alpha); 
++    	}
++    	*/
++    	double lt = 1.;
++    	double lz = 1.;
++    	if (t > m_sgrSta + eps && m_alpm==1) { // && m_muin < 1.0) {
++    	
++    		// update alpha
++		lt = (F * N[1]).norm();
++		lz = (F * N[2]).norm();
++		alpha = atan(tan(alpha) * pow(lt / lz, aexp));
++    	
++		// pointwise, consistent with mesh generated with Matlab script
++		/*
++		N[2] = {0.0, 0.0, 1.0}; N[2] = N[2]/sqrt(N[2]*N[2]);	// axial = d(Xcl)/d(z)
++		N[1] = {-NX.y, NX.x, NX.z};				// circu.
++		Np = N[1]*sin(alpha)+N[2]*cos(alpha);	// original diagonal fiber dir.
++		Nn = N[1]*sin(alpha)-N[2]*cos(alpha);	// idem for symmetric
++		*/
++    	}
++    	
++    	vec3d Np = Nt * sin(alpha) + Nz * cos(alpha);
++    	vec3d Nn = Nt * sin(alpha) - Nz * cos(alpha);
++    	
++    	// --- CÓDIGO DE DEPURACIÓN PARA IMPRIMIR ---
++	// Imprime los vectores base
++	//feLog("N[1] (Nt) = [%.5f, %.5f, %.5f]\n", Nt.x, Nt.y, Nt.z);
++	//feLog("N[2] (Nz) = [%.5f, %.5f, %.5f]\n", Nz.x, Nz.y, Nz.z);
++	
++	// Imprime el ángulo y estiramientos
++	//feLog("lt = %.5f, lz = %.5f, alpha_act = %.5f rad\n", lt, lz, alpha_act);
++	
++	// Imprime las fibras resultantes
++	//feLog("Np = [%.5f, %.5f, %.5f]\n", Np.x, Np.y, Np.z);
++	//feLog("Nn = [%.5f, %.5f, %.5f]\n", Nn.x, Nn.y, Nn.z);
++	//feLog("--------------------------------------------------\n");
++    	
++    	// Evaluate the structural direction in the reference configuration
++	//vec3d  Np = N[1]*sin(alpha)+N[2]*cos(alpha);	// original diagonal fiber dir.
++	//vec3d  Nn = N[1]*sin(alpha)-N[2]*cos(alpha);	// idem for symmetric
++	//vec3d  Np = N[2]*cos(alpha) + N[1]*sin(alpha); 
++	//vec3d  Nn = N[2]*cos(alpha) - N[1]*sin(alpha); 
++	
++	//feLog("axial(N2)=%f\t%f\t%f\n",N[2].x,N[2].y,N[2].z);
++	//feLog("circ.(N1)=%f\t%f\t%f\n",N[1].x,N[1].y,N[1].z);
++	
++	
++	double azimuth = acos(-NX.y);			// azimuth wrt axis -Y
++	
++	mat3ds Ge = I;	// Ge (unit matrix)
++	///*
++	//if (m_degr==1) {
++	// Ge from spectral decomposition
++	//N[0] = N[2]^N[1];
++	Ge = 1.0/Get/Gez*dyad(N[0]) + Get*dyad(N[1]) + Gez*dyad(N[2]);
++	//} 
++	//*/
++
++
++	double muout = mu;
++	double muin  = mu;
++	
++	double ccout  = cc;
++	double ccin   = cc;		// 0.77 (alone) | 0.91 (aging) | 0.91 (hypertension)
++		
++	
++	if (t > m_sgrSta + eps && m_degr==1) {
++		//	ELASTIN DAMAGE
++		muout = m_muout*mu;
++		muin  = m_muin*muout;
++		
++		if (m_asym == 0) {
++			mu = muout+(muin-muout)*(sgr-m_sgrSta)/(m_sgrEnd-m_sgrSta)*exp(-pow(std::abs((X.z-m_z_center)/m_z_spread),m_nuz));	// axisymmetric aneurysm
++		}
++		if (m_asym == 1) {
++			mu = muout+(muin-muout)*(sgr-m_sgrSta)/(m_sgrEnd-m_sgrSta)*exp(-pow(std::abs((X.z-m_z_center)/m_z_spread),m_nuz))*exp(-pow(std::abs((azimuth-M_PI)/(M_PI/m_pif)),m_nut)); 	// asymmetric aneurysm	
++		}
++	
++		//	REDUCED COLLAGEN CROSS-LINKING
++		ccout  = m_ccout*cc;
++		ccin   = m_ccin*ccout;		// 0.77 (alone) | 0.91 (aging) | 0.91 (hypertension)
++		//double cctout = m_ccout*cct;
++		//double cctin  = m_ccin*cct;		
++		//double cczout = m_ccout*ccz;
++		//double cczin  = m_ccin*ccz;		// 
++		
++		if (m_asym == 0) {
++			cc = ccout+(ccin-ccout)*(sgr-m_sgrSta)/(m_sgrEnd-m_sgrSta)*exp(-pow(std::abs((X.z-m_z_center)/m_z_spread),m_nuz));	// axisymmetric aneurysm
++			//cct = cctout+(ccin-cctout)*(sgr-m_sgrSta)/(m_sgrEnd-m_sgrSta)*exp(-pow(std::abs((X.z-m_z_center)/m_z_spread),5));	// axisymmetric aneurysm
++			//ccz = cczout+(ccin-cczout)*(sgr-m_sgrSta)/(m_sgrEnd-m_sgrSta)*exp(-pow(std::abs((X.z-m_z_center)/m_z_spread),5));	// axisymmetric aneurysm
++		}
++		if (m_asym == 1) {
++			cc = ccout+(ccin-ccout)*(sgr-m_sgrSta)/(m_sgrEnd-m_sgrSta)*exp(-pow(std::abs((X.z-m_z_center)/m_z_spread),m_nuz))*exp(-pow(std::abs((azimuth-M_PI)/(M_PI/m_pif)),m_nut)); 	// asymmetric aneurysm	
++			//cct = cctout+(ccin-cctout)*(sgr-m_sgrSta)/(m_sgrEnd-m_sgrSta)*exp(-pow(std::abs((X.z-m_z_center)/m_z_spread),5))*exp(-pow(std::abs((azimuth-M_PI)/(M_PI/3.0)),5)); 
++			//ccz = cczout+(ccin-cczout)*(sgr-m_sgrSta)/(m_sgrEnd-m_sgrSta)*exp(-pow(std::abs((X.z-m_z_center)/m_z_spread),5))*exp(-pow(std::abs((azimuth-M_PI)/(M_PI/3.0)),5)); 
++		}
++	}
++	
++	pt.m_elas_dmg = mu/m_mu; 
++	pt.m_coll_dmg = cc/m_cc;
++	
++	mat3ds Se(0.0);
++	
++	double lto = 1.;
++	double lzo = 1.;
++	double lpo = 1.;
++	double lno = 1.;
++	
++	double lmt2 = 1.; 
++	double lct2 = 1.;
++	double lcz2 = 1.; 
++	double lcp2 = 1.; 
++	double lcn2 = 1.;
++	
++	if (m_hypSel == 1) Se = mu*I;	// Neo-hooke
++	if (m_hypSel == 2){		// St.Venant-Kirchhoff
++		mat3ds Ae = ((Fe.transpose()*Fe-I).sym())*0.5; // Green-Lagrange elastic strain
++		Se = Ae*2.0*mu;	
++	}
++	if (m_hypSel == 3){		// 4-FIBER FAMILY MOD. 
++		
++		lto = (Fe*N[1]).norm();
++		lzo = (Fe*N[2]).norm();
++		lpo = (Fe*Np).norm();
++		lno = (Fe*Nn).norm();
++		
++		//int x_opt = 1;
++		/*
++		if (m_lo_opt && t <= m_sgrSta + eps){
++			lto = (F*N[1]).norm();
++			lzo = (F*N[2]).norm();
++			lpo = (F*Np).norm();
++			lno = (F*Nn).norm();
++			// hacer G = 1?? REV; MARCOS NO LO HACE
++			// G > 1 uniaxial leads to SDB!?
++			//Gm = 1.0;
++			//Gc = 1.0;
++		}
++		if (m_lo_opt && t > m_sgrSta + eps){
++			//mat3d Fo = pt.m_Fo;
++			lto = (Fo*N[1]).norm();
++			lzo = (Fo*N[2]).norm();
++			lpo = (Fo*Np).norm();
++			lno = (Fo*Nn).norm();
++		}
++		*/
++		
++		lmt2 = (Gm*lto)*(Gm*lto);
++		lct2 = (Gc*lto)*(Gc*lto);
++		lcz2 = (Gc*lzo)*(Gc*lzo);
++		lcp2 = (Gc*lpo)*(Gc*lpo);						// deposition stretch calculation (computational purposes)
++		lcn2 = (Gc*lno)*(Gc*lno);						// idem for symmetric
++		
++		mat3ds Sel = mu*Ge.sqr();	
++		/*
++		mat3ds Sm = (cm*(lmt2-1.0)*exp(dm*(lmt2-1.0)*(lmt2-1.0))*(Gm*Gm)*dyad(N[1]));
++		mat3ds Sc = (cc*(lct2-1.0)*exp(dc*(lct2-1.0)*(lct2-1.0))*(Gc*Gc)*dyad(N[1])*betat +
++				cc*(lcz2-1.0)*exp(dc*(lcz2-1.0)*(lcz2-1.0))*(Gc*Gc)*dyad(N[2])*betaz +
++				cc*(lcp2-1.0)*exp(dc*(lcp2-1.0)*(lcp2-1.0))*(Gc*Gc)*dyad( Np )*betad +
++				cc*(lcn2-1.0)*exp(dc*(lcn2-1.0)*(lcn2-1.0))*(Gc*Gc)*dyad( Nn )*betad );
++		*/
++		/*
++		double Shm  = cm*(lt2-1.0)*exp(dm*(lt2-1.0)*(lt2-1.0));
++		
++		double Shct = cc*(lt2-1.0)*exp(dc*(lt2-1.0)*(lt2-1.0));
++		double Shcz = cc*(lz2-1.0)*exp(dc*(lz2-1.0)*(lz2-1.0));
++		double Shcp = cc*(lp2-1.0)*exp(dc*(lp2-1.0)*(lp2-1.0));
++		double Shcn = cc*(ln2-1.0)*exp(dc*(ln2-1.0)*(ln2-1.0));
++		*/
++		
++		double Shm  = cm*(lmt2-1.0)*exp(dm*(lmt2-1.0)*(lmt2-1.0))*(Gm*Gm);
++		
++		//double Shct = cct*(lct2-1.0)*exp(dct*(lct2-1.0)*(lct2-1.0))*(Gc*Gc);
++		//double Shcz = ccz*(lcz2-1.0)*exp(dcz*(lcz2-1.0)*(lcz2-1.0))*(Gc*Gc);
++		double Shct = cc*(lct2-1.0)*exp(dc*(lct2-1.0)*(lct2-1.0))*(Gc*Gc);
++		double Shcz = cc*(lcz2-1.0)*exp(dc*(lcz2-1.0)*(lcz2-1.0))*(Gc*Gc);
++		double Shcp = cc*(lcp2-1.0)*exp(dc*(lcp2-1.0)*(lcp2-1.0))*(Gc*Gc);
++		double Shcn = cc*(lcn2-1.0)*exp(dc*(lcn2-1.0)*(lcn2-1.0))*(Gc*Gc);
++		
++		mat3ds Sm = Shm*dyad(N[1]);
++		mat3ds Sc = (  Shct*dyad(N[1])*betat + Shcz*dyad(N[2])*betaz +
++				Shcp*dyad( Np )*betad + Shcn*dyad( Nn )*betad );
++		//
++				
++		Se = phieo * Sel + phimo * Sm + phico * Sc;	// elastin + SMCs + collagen
++		
++	}
++	
++	// restore safe copy
++	//ep.m_F = F;
++	//ep.m_J = J;
++	
++	//char *msg = "F = %f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n"		"--------------------------------------------\n";
++	//feLog(msg,F(0,0),F(1,1),F(2,2),F(0,1),F(1,0),F(0,2),F(2,0),F(1,2),F(2,1));
++
++	//char *msgx = "X = %f\t%f\t%f\n";
++	//feLog(msgx,X.x,X.y,X.z);
++	
++	// =======================================
++	
++	// active ("relaxed" / MBE-only: see knockouts)
++	//double Tmax = 250.0 * 0.0;			// 250.0 | 50.0 | 150.0 (for uniform cases, except for contractility -> 250)
++	//double lamM = 1.1;
++	//double lam0 = 0.4;
++	//double CB = sqrt(log(2.0));			// such that (1-exp(-CB^2)) = 0.5 (0.8326)
++	//double CS = 0.5*m_cb * 1.0;			// such that (1-exp( -C^2)) = 0.0 for lt = 1/(1+CB/CS)^(1/3) = 0.7 and (1-exp(-C^2)) = 0.75 for lt = 2.0
++	//mat3ds Sao = phimo * m_Tmax*(1.0-exp(-m_cb*m_cb))*(1.0-pow((m_lamM-1.0)/(m_lamM-m_lam0),2))*(lto*lto)*dyad(Nt);
++	
++	// extra PK-2 stress, Sx_n+1
++	// isotropic growth ONLY
++	//mat3ds Sx = pow(J,1.0/3.0)*Se + phimo * Sa; 
++	//mat3ds Sx = pow(J,1.0/3.0)*(Se + phimo * Sa); // if Sa is a function of elastic strain
++	mat3ds Sx = pow(J,1.0/3.0) * Se; // TODO add active stress
++	
++	// Cauchy-Green strain
++	mat3ds C = ep.RightCauchyGreen();
++	mat3ds Ci = C.inverse();
++	
++	// volumetric extra Cauchy stress, svx_n+1
++	double svx = 1.0/3.0/J*Sx.dotdot(C);
++	
++	mat3ds S(0.0);
++	double svo = 0.0;
++	
++	double Jdep = 0.9999;
++	double lm = m_kJ; //1.0e5;
++	
++	if (t <= m_sgrSta + eps) {
++    	
++		// total Cauchy stress, s_n+1
++	    	S = Se + Ci*lm*log(Jdep*J);
++	    	//S = Ci*lm*log(Jdep*J);	
++	    	
++	    	// store volumetric Cauchy stress  (original-homeostatic)
++	    	svo   = 1.0/3.0/J*S.dotdot(C);	 //(1.0/3.0)*se.dotdot(I);
++	    	pt.m_svo = svo;
++	    	
++	    	// store Fo
++	    	pt.m_Fo = F;
++    		
++    	}
++    	else {
++	    	// retrieve volumetric Cauchy stress  (original-homeostatic)
++	    	svo = pt.m_svo;
++	    	
++	    	// Lagrange multiplier, p_n+1
++	    	// Note: stimulus func. for arteries ONLY; f(sigx_1)
++	    	double p = 0.0;
++	    	if (m_MBE_opt == 0){ // (RATE DEPENDENT)
++	    		p = svx - svo*(1.0+log(J/Jp)/(m_kPar*dt));	
++		}
++		if (m_MBE_opt == 1) p = svx - svo;	// (MBE) // p = 1.0/3.0/J*Sx.dotdot(C) - svo;
++			//p = svx - svo/(1.0-delta)*(1.0+KsKi*(EPS*pow(rIrIo,-3)-1.0)-KfKi*inflam);		// Ups = 1 -> p
++		
++	    	// total PK-2 stress, S_n+1
++	    	S = Sx - J*p*Ci;   
++	    	
++	    	// prints stuff
++		//int m_writeRes = 0;
++		if (m_writeRes) {
++		    	char *msg = "F = %f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n"
++				"Fo = %f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n"
++    				"S = %f\t%f\t%f\t%f\t%f\t%f\n"
++    				"--------------------------------------------\n";
++			feLog(msg, 
++    			F(0,0),F(1,1),F(2,2),F(0,1),F(1,0),F(0,2),F(2,0),F(1,2),F(2,1),
++			Fo(0,0),Fo(1,1),Fo(2,2),Fo(0,1),Fo(1,0),Fo(0,2),Fo(2,0),Fo(1,2),Fo(2,1), 
++    			S.xx(),S.yy(),S.zz(),S.xy(),S.xz(),S.yz());
++    		}
++	    	
++	}
++	
++	// total cauchy stress (push-forward of S)
++	//mat3ds sigma = ep.push_forward(S);
++	mat3ds sigma = 1.0/J*(F*(S*F.transpose())).sym();
++	
++	// prints stuff
++	//int m_writeRes = 0;
++	if (m_writeRes) {
++	    	char *msg = "F = %f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n"
++			//"Fo = %f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n"
++    			//"S = %f\t%f\t%f\t%f\t%f\t%f\n"
++    			"sig = %f\t%f\t%f\t%f\t%f\t%f\n"
++    			//"lsq = %f\t%f\t%f\t%f\t%f\n"
++    			"lo = %f\t%f\t%f\t%f\n"
++    			"Np = %f\t%f\t%f\n"
++    			"Nn = %f\t%f\t%f\n"
++    			"Nz = %f\t%f\t%f\n"
++    			"Nc = %f\t%f\t%f\n"
++    			"--------------------------------------------\n";
++		feLog(msg,
++    		F(0,0),F(1,1),F(2,2),F(0,1),F(1,0),F(0,2),F(2,0),F(1,2),F(2,1),
++		//Fo(0,0),Fo(1,1),Fo(2,2),Fo(0,1),Fo(1,0),Fo(0,2),Fo(2,0),Fo(1,2),Fo(2,1), 
++    		//S.xx(),S.yy(),S.zz(),S.xy(),S.xz(),S.yz());
++    		sigma.xx(),sigma.yy(),sigma.zz(),sigma.xy(),sigma.xz(),sigma.yz(),
++    		lto, lzo, lpo, lno,
++    		//lmt2, lct2, lcz2, lcp2, lcn2,
++    		Np(0), Np(1), Np(2),
++    		Nn(0), Nn(1), Nn(2),
++    		N[2].x, N[2].y, N[2].z,
++    		N[1].x, N[1].y, N[1].z
++    		);
++    		// 	print(lm2, lct2, lcz2, lcp2, lcn2)
++    	}
++
++	//feLog("sig = %f\t%f\t%f\t%f\t%f\t%f\n",sigma.xx(),sigma.yy(),sigma.zz(),sigma.xy(),sigma.xz(),sigma.yz());
++	
++	return sigma; //ep.push_forward(S);
++	//return s;
++}
++
++//-----------------------------------------------------------------------------
++//! Material tangent
++tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)	
++{
++
++	// get machine epsilon 
++	double eps = std::numeric_limits<double>::epsilon();
++	
++	// Get current time, end time and time-step
++    	double t = GetFEModel()->GetTime().currentTime;
++
++	double dt = GetTimeInfo().timeIncrement;
++	
++	//double endtime = GetFEModel()->GetCurrentStep()->m_tend;
++	//double endtime = GetFEModel()->GetCurrentStep()->m_tend;
++
++	//double endtime = 11.0;				// 11.0 | 31.0-32.0 (TEVG)  // end of time-interval for stimulus application?
++	double partialtime = m_sgrEnd;			// partialtime <= endtime | 10.0 | 10.4 (for TI calculation)
++	double sgr = std::min(t,partialtime);		// min(t,partialtime) | min(t,9.0)
++ 
++ 	// Get elastic material point data (def grad, F_n+1)
++ 	FEElasticMaterialPoint& ep = *mp.ExtractData<FEElasticMaterialPoint>();
++ 	
++ 	// get the KinematicGrowth point data 
++	FEKinematicMaterialPointZ& pt = *mp.ExtractData<FEKinematicMaterialPointZ>();
++ 	
++ 	// Get Jacobian of deformation gradient, J_n (previous time-step)
++ 	double Jp = pt.m_Jp;	// Fg_n
++ 	
++ 	// Get total deformation gradient, F_n+1
++	mat3d &F = ep.m_F;		// F_n+1
++	double J = ep.m_J;		// J_n+1 
++	//pt.m_J = J;			// already saved J_n+1; 
++	
++	// Dyadic products of identity
++	mat3dd I(1.0);				// identity (2nd order)
++	tens4dmm IoI = dyad4mm(I,I);
++	tens4dmm IxI = dyad1mm(I,I);
++	
++	// Get growth deformation gradient, Fg_n+1
++	mat3d  Fg = pow(J,1.0/3.0)*I;		// isotropic-volumetric growth ONLY
++	mat3d  Fgi = Fg.inverse();		// Fg_n+1 inverse
++	double Jgi = Fgi.det();		// 1/J_n
++	
++	// elastic deformation gradient, Fe_n+1 (for elastic stress calculation)
++	mat3d Fe; // = et.m_F*Fgi;		// Note: px.m_Fe is Fe_n
++	//double Je = et.m_J*Jgi;
++	
++	mat3d Fo = pt.m_Fo;
++	
++	Fe = F*Fgi;		// 
++	if (m_lo_opt && t > m_sgrSta + eps){
++		Fe = Fo;	// elastic strain does not evolve during G&R of aneurysms?
++	}
++	
++	// =======================================
++	
++	// substitute elastic deformation in material point
++	//ep.m_F = Fe;
++	//ep.m_J = Je;
++
++
++	// MATERIAL PARAMETERS ----------------------------
++	//double mu = m_mu; //100.0;	// NEO-HOOKE / ST.VENANT-K (UNIAXIAL EXAMPLE)
++
++	// mass/volume fractions
++	///*
++	double phieo = m_phieo;
++	double phico = m_phico;
++	double phimo = 1.0 - phieo - phico;
++	if (phieo + phico > 1.0){
++		phieo = 1.0; //0.34;
++		phico = 1.0; //0.33;
++		phimo = 1.0; //
++	}
++	//*/
++	//double phieo = 1.0; //0.34;
++	//double phico = 1.0; //0.33;
++	//double phimo = 1.0; //
++	//
++	//
++
++
++	double mu  = m_mu; 
++	
++	double cm = m_cm;
++	double dm = m_dm;
++	double cc = m_cc;
++	double dc = m_dc;
++	
++	//double ccz = m_ccz;
++	//double dcz = m_dcz;
++	//double cct = m_cct;
++	//double dct = m_dct;
++	
++	double Gm = m_Gm;
++	double Gc = m_Gc;
++	double Get = m_Get;
++	double Gez = m_Gez;
++	
++	double betat = m_betat;		// 0.045
++	double betaz = m_betaz;		// 0.062
++	
++	double betad = 0.5*(1.0 - betat - betaz);
++	if (betat + betaz > 1.0){
++		betat = 1.0; 
++		betaz = 1.0; 
++		betad = 0.5; 
++	}
++	
++	double alpha_d = m_alpha;
++	
++	// ======================================
++	/*
++	// KNOCKOUTS
++	//double phieo = 0.34;
++	//double phico = 0.33;
++	//double phimo = 1.0 - phieo - phico;
++	
++	double mu = 89.71; 
++	double Gm = m_Gm; //1.20; //m_Gm; // dep stretch smc
++	double Gc = m_Gc; //1.25; //m_Gc; // dep stretch col
++	//double Get = 1.90; //m_Get;		
++	//double Gez = 1.62; //m_Gez;
++	
++	// ---------------
++	double cm = 261.4;	// kPa
++	double dm = 0.24;
++	double cc = 234.9;	// kPa
++	double dc = 4.08;
++	double alpha_d = 29.9;	// deg
++	//
++	double betat = 0.056;	// orientation fractions for collagen
++	double betaz = 0.067;
++	
++	*/
++	// ======================================
++	/*
++	// TORTUOSITY
++	//double phieo = 0.331;
++	//double phimo = 0.265;
++	//double phico = 0.404;
++
++	double mu = 88.46;									// 88.46
++
++	double alpha_d = 38.1; //0.665;							// 0.615 (110) / 0.665 (120)
++
++	double cm = 419.1;									// 419.1
++	double dm = 0.105;									// 0.105
++	double Gm = m_Gm; //1.198;									// 1.198
++	double cc = 1278.;									// 1278.
++	double dc = 11.10;									// 11.10
++	double Gc = m_Gc; //1.092;									// 1.092
++	
++	//double Get = 2.153;			// 1.993 (110) / 2.153 (120)
++	//double Gez = 1.572;			// 1.572
++
++	double betat = 0.045;		// 0.045
++	double betaz = 0.062;		// 0.062
++	*/
++	// ======================================
++	//
++	/*	
++	// ELASTIN/COLL. REDUCTION FACTORS
++	double m_muin; double m_ccin;
++	if (m_asym == 1) {	// A-symmetric aneurysms
++		m_muin = 0.50; 
++		m_ccin = 0.40;	
++	}
++	if (m_asym == 0) {	// AXI-symmetric aneurysms
++		m_muin = 0.70; 
++		m_ccin = 0.70;	
++	
++	}
++	*/
++	///*
++	//double m_muout = 1.00;		// 1.00 (alone) | 1.00-0.30 = 0.70 (aging) | 1.00 (hypertension) | 1.00 (alone & contractility (50))
++	//double m_muin  = 0.40;		// 0.38 (alone) | 0.68-0.30 = 0.38 (aging) | 0.63 (hypertension) | 0.30 (alone & contractility (50))
++	
++	//double m_ccout = 1.00;
++	//double m_ccin  = 0.60;		// 0.77 (alone) | 0.91 (aging) | 0.91 (hypertension)
++	//*/
++	//
++	// ------------------------------------------------
++	double aexp = 1.0;			// 1.0 (KNOCKOUTS) | 0.0 (CMAME and TORTUOSITY)
++	double alpha = alpha_d*M_PI/180;	// rad
++	
++	
++	// retrieve material position
++	vec3d X = mp.m_r0;
++	vec3d Xcl = {0.0, 0.0, X.z};				// center line
++	vec3d NX = {X.x-Xcl.x,X.y-Xcl.y,X.z-Xcl.z};		// radial vector
++	double ro = sqrt(NX*NX);
++	NX /= ro;
++
++	// retrieve local element basis directions
++	//vec3d N[3];
++	
++	// pointwise, consistent with mesh generated with Matlab script
++	//N[2] = {0.0, 0.0, 1.0}; N[2] = N[2]/sqrt(N[2]*N[2]);	// axial = d(Xcl)/d(z)
++	//N[1] = {-NX.y, NX.x, NX.z};				// circu.
++	//N[0] = N[2]^N[1];					// radial
++	//N[2] = {1.0, 0.0, 0.0}; N[2] = N[2]/sqrt(N[2]*N[2]);	// axial = d(Xcl)/d(z)
++	//N[1] = {0.0, 1.0, 0.0}; N[1] = N[1]/sqrt(N[1]*N[1]);	// circumferential
++	
++	
++	// get the local coordinate systems
++	mat3d Q = GetLocalCS(mp);
++	
++	// Unified fiber directions 
++	vec3d Nz(Q(0,2),Q(1,2),Q(2,2)); 	// axial
++	//vec3d Nt(Q(0,1),Q(1,1),Q(2,1)); 	// circ
++	vec3d Nt = vec3d(-NX.y, NX.x, 0.0);  // circunferencial (tangente al radio)
++	vec3d Nr = Nz ^ Nt; 			// radial
++	double lenz = Nz.norm(); double lent = Nt.norm(); double lenr = Nr.norm();
++	if (lenz > 1e-12) Nz /= lenz;
++	if (lent > 1e-12) Nt /= lent;
++	if (lenr > 1e-12) Nr /= lenr;
++	vec3d N[3] = {Nr, Nt, Nz};
++
++	mat3ds tent = dyad(Nt);
++	mat3ds tenz = dyad(Nz);
++
++
++	/*
++	if (m_degr==0) {
++    		// Copy the local element basis directions to n
++		//vec3d n[2];
++    		//n[0].x = Q[0][0]; n[0].y = Q[1][0]; n[0].z = Q[2][0];	// axial? 	
++    		//n[1].x = Q[0][1]; n[1].y = Q[1][1]; n[1].z = Q[2][1];	// circ.?
++    		N[2].x = Q[0][0]; N[2].y = Q[1][0]; N[2].z = Q[2][0];	// axial? 	
++    		N[1].x = Q[0][1]; N[1].y = Q[1][1]; N[1].z = Q[2][1];	// circ.?
++    		Np = N[2]*cos(alpha) + N[1]*sin(alpha); 
++		Nn = N[2]*cos(alpha) - N[1]*sin(alpha); 
++    	}
++    	*/
++    	mat3ds dtanadC(0.0);
++    	vec3d dNpdta(0.0);
++    	vec3d dNndta(0.0);
++    	
++    	if (t > m_sgrSta + eps && m_alpm==1) {
++    		
++    		// update alpha
++		double lt = (F * Nt).norm();
++		double lz = (F * Nz).norm();
++		alpha = atan(tan(alpha) * pow(lt / lz, aexp));
++    	
++		// pointwise, consistent with mesh generated with Matlab script
++		/*
++		N[2] = {0.0, 0.0, 1.0}; N[2] = N[2]/sqrt(N[2]*N[2]);	// axial = d(Xcl)/d(z)
++		N[1] = {-NX.y, NX.x, NX.z};				// circu.
++		Np = N[1]*sin(alpha)+N[2]*cos(alpha);	// original diagonal fiber dir.
++		Nn = N[1]*sin(alpha)-N[2]*cos(alpha);	// idem for symmetric
++		*/
++		
++		// derivative of the fiber direction vectors Np and Nn with respect to tan(alpha)
++		dNpdta = (Nt - Nz*tan(alpha))*pow(1 + pow(tan(alpha),2),-1.5);	// d(Np)/d(tan(alpha))
++		dNndta = (Nt + Nz*tan(alpha))*pow(1 + pow(tan(alpha),2),-1.5);
++		
++		// derivative 2 * d(tan(alpha)) / dC
++		dtanadC = (tent * (1.0 / (lt*lt)) - tenz * (1.0 / (lz*lz))) * (tan(alpha)*aexp);	// 2*d(tan(alpha))/d(C) : (Ft)o(Ft)
++    	}
++    	
++    	vec3d Np = Nt * sin(alpha) + Nz * cos(alpha);
++    	vec3d Nn = Nt * sin(alpha) - Nz * cos(alpha);
++    	
++    	mat3ds tenp = dyad(Np);
++	mat3ds tenn = dyad(Nn);
++    	
++    	// Evaluate the structural direction in the reference configuration
++	//vec3d  Np = N[1]*sin(alpha)+N[2]*cos(alpha);	// original diagonal fiber dir.
++	//vec3d  Nn = N[1]*sin(alpha)-N[2]*cos(alpha);	// idem for symmetric
++	//vec3d  Np = N[2]*cos(alpha) + N[1]*sin(alpha); 
++	//vec3d  Nn = N[2]*cos(alpha) - N[1]*sin(alpha); 
++	
++	double azimuth = acos(-NX.y);			// azimuth wrt axis -Y
++	
++	
++	mat3ds Ge = I;	// Ge (unit matrix)
++	///*
++	//if (m_degr==1) {
++	// Ge from spectral decomposition
++	N[0] = N[2]^N[1];
++	Ge = 1.0/Get/Gez*dyad(N[0]) + Get*tent + Gez*tenz;
++	//} 
++	//*/
++	
++		
++	
++	double muout = mu;
++	double muin  = mu;
++	
++	double ccout  = cc;
++	double ccin   = cc;
++	
++	if (t > m_sgrSta + eps && m_degr==1) {
++		//	ELASTIN DAMAGE
++		muout = m_muout*mu;
++		muin  = m_muin*muout;
++		
++		if (m_asym == 0) {
++			mu = muout+(muin-muout)*(sgr-m_sgrSta)/(m_sgrEnd-m_sgrSta)*exp(-pow(std::abs((X.z-m_z_center)/m_z_spread),m_nuz));	// axisymmetric aneurysm
++		}
++		if (m_asym == 1) {
++			mu = muout+(muin-muout)*(sgr-m_sgrSta)/(m_sgrEnd-m_sgrSta)*exp(-pow(std::abs((X.z-m_z_center)/m_z_spread),m_nuz))*exp(-pow(std::abs((azimuth-M_PI)/(M_PI/m_pif)),m_nut)); 	// asymmetric aneurysm	
++		}
++
++		//	REDUCED COLLAGEN CROSS-LINKING
++		ccout  = m_ccout*cc;
++		ccin   = m_ccin*ccout;		// 0.77 (alone) | 0.91 (aging) | 0.91 (hypertension)
++		//double cctout = m_ccout*cct;
++		//double cctin  = m_ccin*cct;		
++		//double cczout = m_ccout*ccz;
++		//double cczin  = m_ccin*ccz;		// 
++		
++		if (m_asym == 0) {
++			cc = ccout+(ccin-ccout)*(sgr-m_sgrSta)/(m_sgrEnd-m_sgrSta)*exp(-pow(std::abs((X.z-m_z_center)/m_z_spread),m_nuz));	// axisymmetric aneurysm
++			//cct = cctout+(ccin-cctout)*(sgr-m_sgrSta)/(m_sgrEnd-m_sgrSta)*exp(-pow(std::abs((X.z-m_z_center)/m_z_spread),5));	// axisymmetric aneurysm
++			//ccz = cczout+(ccin-cczout)*(sgr-m_sgrSta)/(m_sgrEnd-m_sgrSta)*exp(-pow(std::abs((X.z-m_z_center)/m_z_spread),5));	// axisymmetric aneurysm
++		}
++		if (m_asym == 1) {
++			cc = ccout+(ccin-ccout)*(sgr-m_sgrSta)/(m_sgrEnd-m_sgrSta)*exp(-pow(std::abs((X.z-m_z_center)/m_z_spread),m_nuz))*exp(-pow(std::abs((azimuth-M_PI)/(M_PI/m_pif)),m_nut)); 	// asymmetric aneurysm	
++			//cct = cctout+(ccin-cctout)*(sgr-m_sgrSta)/(m_sgrEnd-m_sgrSta)*exp(-pow(std::abs((X.z-m_z_center)/m_z_spread),5))*exp(-pow(std::abs((azimuth-M_PI)/(M_PI/3.0)),5)); 
++			//ccz = cczout+(ccin-cczout)*(sgr-m_sgrSta)/(m_sgrEnd-m_sgrSta)*exp(-pow(std::abs((X.z-m_z_center)/m_z_spread),5))*exp(-pow(std::abs((azimuth-M_PI)/(M_PI/3.0)),5)); 
++		}
++	}
++	
++	pt.m_elas_dmg = mu/m_mu; 
++	pt.m_coll_dmg = cc/m_cc;
++
++	mat3ds Se(0.0);
++	mat3ds dSedJ(0.0);
++	tens4dmm Ce(0.0); 
++	tens4ds Cm(0.0); 
++	tens4ds Cc(0.0); 
++	
++	mat3ds dSpdta(0.0);
++	mat3ds dSndta(0.0);
++	tens4dmm Calph(0.0);
++	tens4dmm calph(0.0);
++	
++	if (m_hypSel == 1) Se = mu*I;	// Neo-hooke
++	if (m_hypSel == 2){		// St.Venant-Kirchhoff
++	
++		mat3ds CGe = (Fe.transpose()*Fe).sym();
++		//mat3ds CGei = CGe.inverse();
++		mat3ds Ae = (CGe-I)*0.5; 			   // Green-Lagrange elastic strain
++		//mat3ds Ae = ((Fe.transpose()*Fe-I).sym())*0.5; // Green-Lagrange elastic strain
++		Se = Ae*2.0*mu;	
++		
++		Ce = dyad4s(I,I)*mu; // St.Venant-Kirchhoff
++		
++		dSedJ = (-2.0*mu/3.0)*pow(J,-5.0/3.0)*(F.transpose()*F).sym();
++
++	}
++	if (m_hypSel == 3){		// 4-FIBER FAMILY MOD. 
++		
++		double lto = (Fe*N[1]).norm();
++		double lzo = (Fe*N[2]).norm();
++		double lpo = (Fe*Np).norm();
++		double lno = (Fe*Nn).norm();
++		
++		//int x_opt = 1;
++		/*
++		if (m_lo_opt && t <= m_sgrSta + eps){
++			lto = (F*N[1]).norm();
++			lzo = (F*N[2]).norm();
++			lpo = (F*Np).norm();
++			lno = (F*Nn).norm();
++			// hacer G = 1?? REV; MARCOS NO LO HACE
++			// G > 1 uniaxial leads to SDB!?
++			//Gm = 1.0;
++			//Gc = 1.0;
++		}
++		if (m_lo_opt && t > m_sgrSta + eps){
++			//mat3d Fo = pt.m_Fo;
++			lto = (Fo*N[1]).norm();
++			lzo = (Fo*N[2]).norm();
++			lpo = (Fo*Np).norm();
++			lno = (Fo*Nn).norm();
++		}
++		*/
++		
++		double lmt2 = (Gm*lto)*(Gm*lto);
++		double lct2 = (Gc*lto)*(Gc*lto);
++		double lcz2 = (Gc*lzo)*(Gc*lzo);
++		double lcp2 = (Gc*lpo)*(Gc*lpo);						// deposition stretch calculation (computational purposes)
++		double lcn2 = (Gc*lno)*(Gc*lno);						// idem for symmetric
++
++		
++		mat3ds Sel = mu*Ge.sqr();	
++		
++		double Shm  = cm*(lmt2-1.0)*exp(dm*(lmt2-1.0)*(lmt2-1.0))*(Gm*Gm);
++		
++		//double Shct = cct*(lct2-1.0)*exp(dct*(lct2-1.0)*(lct2-1.0))*(Gc*Gc);
++		//double Shcz = ccz*(lcz2-1.0)*exp(dcz*(lcz2-1.0)*(lcz2-1.0))*(Gc*Gc);
++		double Shct = cc*(lct2-1.0)*exp(dc*(lct2-1.0)*(lct2-1.0))*(Gc*Gc);
++		double Shcz = cc*(lcz2-1.0)*exp(dc*(lcz2-1.0)*(lcz2-1.0))*(Gc*Gc);
++		double Shcp = cc*(lcp2-1.0)*exp(dc*(lcp2-1.0)*(lcp2-1.0))*(Gc*Gc);
++		double Shcn = cc*(lcn2-1.0)*exp(dc*(lcn2-1.0)*(lcn2-1.0))*(Gc*Gc);
++		
++		mat3ds Sm = Shm*dyad(N[1]);
++		mat3ds Sc = (  Shct*dyad(N[1])*betat + Shcz*dyad(N[2])*betaz +
++				Shcp*dyad( Np )*betad + Shcn*dyad( Nn )*betad );
++				
++		Se = phieo * Sel + phimo * Sm + phico * Sc;	// elastin + SMCs + collagen
++		
++		// (dS.hat_a / dI4_a)
++		double dShm  = cm*(1.0+2.0*dm*(lmt2-1.0)*(lmt2-1.0))*exp(dm*(lmt2-1.0)*(lmt2-1.0))*pow(Gm,4);
++		
++		//double dShct = cct*(1.0+2.0*dct*(lct2-1.0)*(lct2-1.0))*exp(dct*(lct2-1.0)*(lct2-1.0))*pow(Gc,4);
++		//double dShcz = ccz*(1.0+2.0*dcz*(lcz2-1.0)*(lcz2-1.0))*exp(dcz*(lcz2-1.0)*(lcz2-1.0))*pow(Gc,4);
++		double dShct = cc*(1.0+2.0*dc*(lct2-1.0)*(lct2-1.0))*exp(dc*(lct2-1.0)*(lct2-1.0))*pow(Gc,4);
++		double dShcz = cc*(1.0+2.0*dc*(lcz2-1.0)*(lcz2-1.0))*exp(dc*(lcz2-1.0)*(lcz2-1.0))*pow(Gc,4);
++		double dShcp = cc*(1.0+2.0*dc*(lcp2-1.0)*(lcp2-1.0))*exp(dc*(lcp2-1.0)*(lcp2-1.0))*pow(Gc,4);
++		double dShcn = cc*(1.0+2.0*dc*(lcn2-1.0)*(lcn2-1.0))*exp(dc*(lcn2-1.0)*(lcn2-1.0))*pow(Gc,4);
++
++		Cm = 2.0 * dShm*dyad1s(tent);
++		Cc = 2.0 * (dShct*dyad1s(tent)*betat + dShcz*dyad1s(tenz)*betaz +
++			  dShcp*dyad1s(tenp)*betad + dShcn*dyad1s(tenn)*betad);
++		
++		// Compute the variation of the 2nd Piola-Kirchhoff stress wrt tan(alpha)
++		dSpdta = 2.0 * Shcp * pow(J,1./3.) * dyad1s(Np, dNpdta);
++		dSndta = 2.0 * Shcn * pow(J,1./3.) * dyad1s(Nn, dNndta);
++		
++		// Tangent stiffness (var. of alpha)
++		tens4dmm Calphp = dyad1mm(dSpdta, dtanadC);
++		tens4dmm Calphn = dyad1mm(dSndta, dtanadC);
++		Calph = phico * betad * (Calphp + Calphn);
++		
++		Ce = phimo * Cm + phico * Cc;	// SMCs + collagen
++		
++		dSedJ = (-2.0/(3.0*J))*(phimo * dShm*lmt2*dyad(N[1]) + 
++			 phico * dShct*lct2*dyad(N[1])*betat + phico * dShcz*lcz2*dyad(N[2])*betaz + 
++			 phico * dShcp*lcp2*dyad( Np )*betad + phico * dShcn*lcn2*dyad( Nn )*betad);
++		
++		///*	 
++		if(m_degr==1 && t > m_sgrSta + eps) {	// constant Fo (aneurysms)
++			Ce = Ce*0.0;
++			dSedJ = dSedJ*0.0;	// [REV; commmented it does not converge]
++		}  
++		//*/
++		
++	}
++	
++	// restore safe copy
++	//ep.m_F = F;
++	//ep.m_J = J;
++	
++	// spatial elastic tangent
++	//tens4dmm ce = m_Base->Tangent(mp);	// no funciona?
++	tens4dmm ce = Ce.pp(F)/J;
++	//tens4dmm Ce = ce.pp(F.inverse())*J;// pull-back to get material tangent
++	
++	calph = Calph.pp(F)/J;
++	
++	if (dt == 0.0) return ce;
++	// restore safe copy
++	//ep.m_F = F;
++	//ep.m_J = J;
++	
++	
++	// =======================================
++	
++	// EXTRA PK-2 stress, Sx_n+1
++	mat3ds Sx = pow(J,1.0/3.0)*Se; // isotropic growth ONLY
++	
++	// Cauchy-Green strain
++	mat3ds C = ep.RightCauchyGreen();
++	mat3ds Ci = C.inverse();
++
++	tens4dmm CixCi = dyad1mm(Ci,Ci);	// 	rev
++	tens4dmm CioCi = dyad4mm(Ci,Ci);	// debe ser el simetrico: 1/2 ...etc  (Holzapfel, p.255)
++	//tens4ds CixCi = dyad1s(Ci);
++	//tens4ds CioCi = dyad4s(Ci);
++	
++	// volumetric extra Cauchy stress, svx_n+1
++	double svx = 1.0/3.0/J*Sx.dotdot(C);
++	
++	tens4dmm c(0.0);
++	tens4dmm Cp(0.0);
++	tens4dmm cp(0.0);
++	mat3ds S(0.0);
++	
++	// retrieves volumetric Cauchy stress  (original-homeostatic)
++	double svo = pt.m_svo;
++	//int m_writeRes = 0;
++	if (t <= m_sgrSta + eps) {
++		//m_writeRes = 1; // to write tangent
++    
++	    	double Jdep = 0.9999;
++		double lm = m_kJ; //1.0e5;
++	    	
++	    	// material volum tangent
++	    	Cp = lm*(CixCi-2.0*log(Jdep*J)*CioCi);	// p = dW_vol/dC = d/dC (ln J)**2
++	    	
++	    	// spatial volum tangent
++	    	//cp = lm/J*(IxI-2.0*log(Jdep*J)*IoI);
++	    	cp = Cp.pp(F)/J;
++	    	
++	    	// total spatial tangent, c_n+1
++	    	c = ce + cp + calph;		// [XXX] added contrib from var. of alpha
++	    	
++	    	// total PK-2 stress, S_n+1 / only to print
++	    	S = Se + Ci*lm*log(Jdep*J);	
++    	}
++    	
++    	else {
++   		//m_writeRes = 1; // to write tangent
++	    	
++	    	// update Lagrange multiplier
++	    	// Note: stimulus func. for arteries ONLY; f(sigx_1)
++	    	double p = 0.0;
++	    	tens4dmm cpAl(0.0);		// Spatial Algorithmic tangent
++	    	if (m_MBE_opt == 0){ // (RATE DEPENDENT)
++	    	
++	    		p = svx - svo*(1.0+log(J/Jp)/(m_kPar*dt));
++	    		
++	    		// Algorithmic volumetric tangent, (dp_n+1_alg)/(dC)
++			//tens4ds CixCi = dyad1s(Ci);
++			//tens4ds CioCi = dyad4s(Ci);
++	    		tens4dmm CpAl = (J*svo/(m_kPar*dt))*((1.0+log(J/Jp))*CixCi-2.0*log(J/Jp)*CioCi);
++	    		cpAl = CpAl.pp(F)/J;
++		}
++		if (m_MBE_opt == 1) p = svx - svo;	// (MBE) // p = 1.0/3.0/J*Sx.dotdot(C) - svo;
++	    	
++		
++	    	// total PK-2 stress, S_n+1
++	    	S = Sx - J*p*Ci;   
++	    	//S = Se; // test
++	    	//mat3ds S = Sx; // test
++	 
++	    	
++	    	// Extra material tangent (for isotropic growth ONLY)
++	    	tens4dmm Cx11 = pow(J,1.0/3.0)*dyad1mm(Se,Ci)*(1.0/3.0);
++	    	tens4dmm Cx12 = pow(J,4.0/3.0)*dyad1mm(dSedJ,Ci);
++	    	tens4dmm Cx2  = pow(J,-1.0/3.0)*Ce;
++	    	//
++		//tens4dmm Cx = pow(J,1.0/3.0)*(1.0/3.0)*dyad1mm(Se,Ci) + pow(J,-1.0/3.0)*Ce;
++		tens4dmm Cx = Cx11 + Cx12 + Cx2;	
++	    	
++	    	// spatial extra tangent (pushforward)
++		tens4dmm cx = Cx.pp(F)/J;	
++
++	    	// extra Cauchy stress
++		mat3ds sx = 1.0/J*(F*(Sx*F.transpose())).sym();
++
++		// volumetric spatial tangent (continuous)
++		tens4dmm cp = 1.0/3.0*(2.0*sx.tr()*IoI-2.0*dyad1mm(I,sx)-ddot(IxI,cx))+ svo*(IxI-2.0*IoI);
++			
++		// total spatial tangent, c_n+1
++		c = cx + cp + cpAl + calph;	// [XXX] added contrib from var. of alpha
++		//c = ce;	// to test
++		//c = ce + cp;	// to test
++		//c = cx;	// to test
++	}
++	    	
++	//feLog("mu/cc = %f\t%f\n",mu,cc);
++
++	// prints stuff
++	//feLog("alpha = %f\n", alpha);
++	if (m_writeRes) {
++	    	char *msg = 
++	    		//"X = %f\t%f\t%f\n"
++	    		//"svo = %f\n"
++	    		"F = %f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n"
++			//"Fo = %f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n"
++    			"S = %f\t%f\t%f\t%f\t%f\t%f\n"
++    			"c =\n"
++    			"%f\t%f\t%f\t%f\t%f\t%f\n"
++    			"%f\t%f\t%f\t%f\t%f\t%f\n"
++    			"%f\t%f\t%f\t%f\t%f\t%f\n"
++    			"%f\t%f\t%f\t%f\t%f\t%f\n"
++    			"%f\t%f\t%f\t%f\t%f\t%f\n"
++    			"%f\t%f\t%f\t%f\t%f\t%f\n"
++    			"--------------------------------------------\n";
++		feLog(msg, 
++		//X.x,X.y,X.z, svo,
++    		F(0,0),F(1,1),F(2,2),F(0,1),F(1,0),F(0,2),F(2,0),F(1,2),F(2,1),
++		//Fo(0,0),Fo(1,1),Fo(2,2),Fo(0,1),Fo(1,0),Fo(0,2),Fo(2,0),Fo(1,2),Fo(2,1), 
++    		S.xx(),S.yy(),S.zz(),S.xy(),S.xz(),S.yz(), //); //,
++    		c(0,0,0,0),c(0,0,1,1),c(0,0,2,2),c(0,0,0,1),c(0,0,1,2),c(0,0,2,0),
++    		c(1,1,0,0),c(1,1,1,1),c(1,1,2,2),c(1,1,0,1),c(1,1,1,2),c(1,1,2,0),
++   		c(2,2,0,0),c(2,2,1,1),c(2,2,2,2),c(2,2,0,1),c(2,2,1,2),c(2,2,2,0),
++   		c(0,1,0,0),c(0,1,1,1),c(0,1,2,2),c(0,1,0,1),c(0,1,1,2),c(0,1,2,0),
++    		c(1,2,0,0),c(1,2,1,1),c(1,2,2,2),c(1,2,0,1),c(1,2,1,2),c(1,2,2,0),
++    		c(2,0,0,0),c(2,0,1,1),c(2,0,2,2),c(2,0,0,1),c(2,0,1,2),c(2,0,2,0));
++    	}
++	return c;
++}
++
++//-----------------------------------------------------------------------------
++//! Strain energy density function
++double FEKinematicGrowthZ::StrainEnergyDensity(FEMaterialPoint& mp)
++{
++	// get machine epsilon 
++	double eps = std::numeric_limits<double>::epsilon();
++	
++	// Get current time, end time and time-step
++    	double t = GetFEModel()->GetTime().currentTime;
++
++	//double dt = GetTimeInfo().timeIncrement;
++	
++	//double endtime = GetFEModel()->GetCurrentStep()->m_tend;
++	//double endtime = GetFEModel()->GetCurrentStep()->m_tend;
++
++	//double endtime = 11.0;				// 11.0 | 31.0-32.0 (TEVG)
++	double partialtime = m_sgrEnd;			// partialtime <= endtime | 10.0 | 10.4 (for TI calculation)
++	double sgr = std::min(t,partialtime);		// min(t,partialtime) | min(t,9.0)
++	
++	// get the KinematicGrowth point data
++	FEKinematicMaterialPointZ& pt = *mp.ExtractData<FEKinematicMaterialPointZ>();
++    	FEElasticMaterialPoint& et = *mp.ExtractData<FEElasticMaterialPoint>();
++    	mat3d &F = et.m_F; double J = et.m_J;
++
++	mat3dd I(1.0);				// identity (2nd order)
++	
++	// Get growth deformation gradient, Fg_n+1
++	mat3d  Fg = pow(J,1.0/3.0)*I;		// isotropic-volumetric growth ONLY
++	mat3d  Fgi = Fg.inverse();		// Fg_n+1 inverse
++	double Jgi = Fgi.det();		// 1/J_n
++	
++	// elastic deformation gradient, Fe_n+1 (for elastic stress calculation)
++	mat3d Fe; // = et.m_F*Fgi;		// Note: px.m_Fe is Fe_n
++	//double Je = et.m_J*Jgi;
++	
++	mat3d Fo = pt.m_Fo;
++	
++	Fe = F*Fgi;		// 
++	if (m_lo_opt && t > m_sgrSta + eps){
++		Fe = Fo;	// elastic strain does not evolve during G&R of aneurysms?
++	}
++
++	// substitute elastic deformation in material point
++	//et.m_F = Fe;
++	//et.m_J = Je;
++
++	// MATERIAL PARAMETERS ----------------------------
++	//double mu = m_mu; //100.0;	// NEO-HOOKE / ST.VENANT-K (UNIAXIAL EXAMPLE)
++
++	// mass/volume fractions
++	///*
++	double phieo = m_phieo;
++	double phico = m_phico;
++	double phimo = 1.0 - phieo - phico;
++	if (phieo + phico > 1.0){
++		phieo = 1.0; //0.34;
++		phico = 1.0; //0.33;
++		phimo = 1.0; //
++	}
++	//*/
++	//double phieo = 1.0; //0.34;
++	//double phico = 1.0; //0.33;
++	//double phimo = 1.0; //
++	//
++	
++	double mu  = m_mu; 
++	
++	double cm = m_cm;
++	double dm = m_dm;
++	double cc = m_cc;
++	double dc = m_dc;
++	
++	//double ccz = m_ccz;
++	//double dcz = m_dcz;
++	//double cct = m_cct;
++	//double dct = m_dct;
++	
++	double Gm = m_Gm;
++	double Gc = m_Gc;
++	double Get = m_Get;
++	double Gez = m_Gez;
++	
++	double betat = m_betat;		// 0.045
++	double betaz = m_betaz;		// 0.062
++	
++	double betad = 0.5*(1.0 - betat - betaz);
++	if (betat + betaz > 1.0){
++		betat = 1.0; 
++		betaz = 1.0; 
++		betad = 0.5; 
++	}
++	
++	double alpha_d = m_alpha;	
++	
++	// ======================================
++	/*
++	// KNOCKOUTS
++	//double phieo = 0.34;
++	//double phico = 0.33;
++	//double phimo = 1.0 - phieo - phico;
++	
++	double mu = 89.71; 
++	double Gm = m_Gm; //1.20; // dep stretch smc
++	double Gc = m_Gc; //1.25; // dep stretch col
++	//double Get = 1.90; //m_Get;		
++	//double Gez = 1.62; //m_Gez;
++	
++	// ---------------
++	double cm = 261.4;	// kPa
++	double dm = 0.24;
++	double cc = 234.9;	// kPa
++	double dc = 4.08;
++	double alpha_d = 29.9;	// deg
++	//
++	double betat = 0.056;	// orientation fractions for collagen
++	double betaz = 0.067;
++	*/ 
++	//======================================
++	/*
++	// TORTUOSITY
++	//double phieo = 0.331;
++	//double phimo = 0.265;
++	//double phico = 0.404;
++
++	double mu = 88.46;									// 88.46
++
++	double alpha_d = 38.1; //0.665;							// 0.615 (110) / 0.665 (120)
++
++	double cm = 419.1;									// 419.1
++	double dm = 0.105;									// 0.105
++	double Gm = m_Gm; //1.198;									// 1.198
++	double cc = 1278.;									// 1278.
++	double dc = 11.10;									// 11.10
++	double Gc = m_Gc; //1.092;									// 1.092
++	
++	double Get = 2.153;			// 1.993 (110) / 2.153 (120)
++	double Gez = 1.572;			// 1.572
++
++	double betat = 0.045;		// 0.045
++	double betaz = 0.062;		// 0.062
++	*/
++	// ======================================
++	//
++	/*	
++	// ELASTIN/COLL. REDUCTION FACTORS
++	double m_muin; double m_ccin;
++	if (m_asym == 1) {	// A-symmetric aneurysms
++		m_muin = 0.50; 
++		m_ccin = 0.40;	
++	}
++	if (m_asym == 0) {	// AXI-symmetric aneurysms
++		m_muin = 0.70; 
++		m_ccin = 0.70;	
++	
++	}
++	*/
++	///*
++	//double m_muout = 1.00;		// 1.00 (alone) | 1.00-0.30 = 0.70 (aging) | 1.00 (hypertension) | 1.00 (alone & contractility (50))
++	//double m_muin  = 0.40;		// 0.38 (alone) | 0.68-0.30 = 0.38 (aging) | 0.63 (hypertension) | 0.30 (alone & contractility (50))
++	
++	//double m_ccout = 1.00;
++	//double m_ccin  = 0.60;		// 0.77 (alone) | 0.91 (aging) | 0.91 (hypertension)
++	//*/
++	// ------------------------------------------------
++	double aexp = 1.0;									// 1.0 (KNOCKOUTS) | 0.0 (CMAME and TORTUOSITY)
++	double alpha = alpha_d*M_PI/180;	// rad
++	
++	// retrieve material position
++	vec3d X = mp.m_r0;
++	vec3d Xcl = {0.0, 0.0, X.z};				// center line
++	vec3d NX = {X.x-Xcl.x,X.y-Xcl.y,X.z-Xcl.z};		// radial vector
++	double ro = sqrt(NX*NX);
++	NX /= ro;
++
++	// retrieve local element basis directions
++	//vec3d N[3];
++
++	// pointwise, consistent with mesh generated with Matlab script
++	//N[2] = {0.0, 0.0, 1.0}; N[2] = N[2]/sqrt(N[2]*N[2]);	// axial = d(Xcl)/d(z)
++	//N[1] = {-NX.y, NX.x, NX.z};				// circumferential
++	//N[0] = N[2]^N[1];					// radial
++	//N[2] = {1.0, 0.0, 0.0}; N[2] = N[2]/sqrt(N[2]*N[2]);	// axial = d(Xcl)/d(z)
++	//N[1] = {0.0, 1.0, 0.0}; N[1] = N[1]/sqrt(N[1]*N[1]);	// circumferential
++	
++	
++	// get the local coordinate systems
++	mat3d Q = GetLocalCS(mp);
++
++	// Unified fiber directions 
++	vec3d Nz(Q(0,2),Q(1,2),Q(2,2)); 	// axial
++	//vec3d Nt(Q(0,1),Q(1,1),Q(2,1)); 	// circ
++	vec3d Nt = vec3d(-NX.y, NX.x, 0.0);  // circunferencial (tangente al radio)
++	vec3d Nr = Nz ^ Nt; 			// radial
++	double lenz = Nz.norm(); double lent = Nt.norm(); double lenr = Nr.norm();
++	if (lenz > 1e-12) Nz /= lenz;
++	if (lent > 1e-12) Nt /= lent;
++	if (lenr > 1e-12) Nr /= lenr;
++	vec3d N[3] = {Nr, Nt, Nz};
++	
++
++	/*
++	if (m_degr==0) {
++    		// Copy the local element basis directions to n
++		//vec3d n[2];
++    		//n[0].x = Q[0][0]; n[0].y = Q[1][0]; n[0].z = Q[2][0];	// axial? 	
++    		//n[1].x = Q[0][1]; n[1].y = Q[1][1]; n[1].z = Q[2][1];	// circ.?
++    		N[2].x = Q[0][0]; N[2].y = Q[1][0]; N[2].z = Q[2][0];	// axial? 	
++    		N[1].x = Q[0][1]; N[1].y = Q[1][1]; N[1].z = Q[2][1];	// circ.?
++    		Np = N[2]*cos(alpha) + N[1]*sin(alpha); 
++		Nn = N[2]*cos(alpha) - N[1]*sin(alpha); 
++    	}
++    	*/
++    	if (t > m_sgrSta + eps && m_alpm==1) {
++    	
++    		// update alpha 
++    		// [TODO] UPDATE TANGENT TO ACCOUNT FOR VARIATION OF ALPHA
++		double lt = (F * N[1]).norm();
++		double lz = (F * N[2]).norm();
++		alpha = atan(tan(alpha) * pow(lt / lz, aexp));
++    	   	
++		// pointwise, consistent with mesh generated with Matlab script
++		/*
++		N[2] = {0.0, 0.0, 1.0}; N[2] = N[2]/sqrt(N[2]*N[2]);	// axial = d(Xcl)/d(z)
++		N[1] = {-NX.y, NX.x, NX.z};				// circu.
++		Np = N[1]*sin(alpha)+N[2]*cos(alpha);	// original diagonal fiber dir.
++		Nn = N[1]*sin(alpha)-N[2]*cos(alpha);	// idem for symmetric
++		*/
++    	}
++    	
++    	vec3d Np = Nt * sin(alpha) + Nz * cos(alpha);
++    	vec3d Nn = Nt * sin(alpha) - Nz * cos(alpha);
++    	
++    	// Evaluate the structural direction in the reference configuration
++	//vec3d  Np = N[1]*sin(alpha)+N[2]*cos(alpha);	// original diagonal fiber dir.
++	//vec3d  Nn = N[1]*sin(alpha)-N[2]*cos(alpha);	// idem for symmetric
++	//vec3d  Np = N[2]*cos(alpha) + N[1]*sin(alpha); 
++	//vec3d  Nn = N[2]*cos(alpha) - N[1]*sin(alpha); 
++	
++	double azimuth = acos(-NX.y);			// azimuth wrt axis -Y
++	
++	
++	mat3ds Ge = I;	// Ge (unit matrix)
++	///*
++	//if (m_degr==1) {
++	// Ge from spectral decomposition
++	N[0] = N[2]^N[1];
++	Ge = 1.0/Get/Gez*dyad(N[0]) + Get*dyad(N[1]) + Gez*dyad(N[2]);
++	//} 
++	//*/
++	
++	double muout = mu;
++	double muin  = mu;
++	
++	double ccout  = cc;
++	double ccin   = cc;
++	
++	if (t > m_sgrSta + eps && m_degr==1) {
++		//	ELASTIN DAMAGE
++		muout = m_muout*mu;
++		muin  = m_muin*muout;
++		
++		if (m_asym == 0) {
++			mu = muout+(muin-muout)*(sgr-m_sgrSta)/(m_sgrEnd-m_sgrSta)*exp(-pow(std::abs((X.z-m_z_center)/m_z_spread),m_nuz));	// axisymmetric aneurysm
++		}
++		if (m_asym == 1) {
++			mu = muout+(muin-muout)*(sgr-m_sgrSta)/(m_sgrEnd-m_sgrSta)*exp(-pow(std::abs((X.z-m_z_center)/m_z_spread),m_nuz))*exp(-pow(std::abs((azimuth-M_PI)/(M_PI/m_pif)),m_nut)); 	// asymmetric aneurysm	
++		}
++	
++		//	REDUCED COLLAGEN CROSS-LINKING
++		ccout  = m_ccout*cc;
++		ccin   = m_ccin*ccout;		// 0.77 (alone) | 0.91 (aging) | 0.91 (hypertension)
++		//double cctout = m_ccout*cct;
++		//double cctin  = m_ccin*cct;		
++		//double cczout = m_ccout*ccz;
++		//double cczin  = m_ccin*ccz;		// 
++		
++		if (m_asym == 0) {
++			cc = ccout+(ccin-ccout)*(sgr-m_sgrSta)/(m_sgrEnd-m_sgrSta)*exp(-pow(std::abs((X.z-m_z_center)/m_z_spread),m_nuz));	// axisymmetric aneurysm
++			//cct = cctout+(ccin-cctout)*(sgr-m_sgrSta)/(m_sgrEnd-m_sgrSta)*exp(-pow(std::abs((X.z-m_z_center)/m_z_spread),5));	// axisymmetric aneurysm
++			//ccz = cczout+(ccin-cczout)*(sgr-m_sgrSta)/(m_sgrEnd-m_sgrSta)*exp(-pow(std::abs((X.z-m_z_center)/m_z_spread),5));	// axisymmetric aneurysm
++		}
++		if (m_asym == 1) {
++			cc = ccout+(ccin-ccout)*(sgr-m_sgrSta)/(m_sgrEnd-m_sgrSta)*exp(-pow(std::abs((X.z-m_z_center)/m_z_spread),m_nuz))*exp(-pow(std::abs((azimuth-M_PI)/(M_PI/m_pif)),m_nut)); 	// asymmetric aneurysm	
++			//cct = cctout+(ccin-cctout)*(sgr-m_sgrSta)/(m_sgrEnd-m_sgrSta)*exp(-pow(std::abs((X.z-m_z_center)/m_z_spread),5))*exp(-pow(std::abs((azimuth-M_PI)/(M_PI/3.0)),5)); 
++			//ccz = cczout+(ccin-cczout)*(sgr-m_sgrSta)/(m_sgrEnd-m_sgrSta)*exp(-pow(std::abs((X.z-m_z_center)/m_z_spread),5))*exp(-pow(std::abs((azimuth-M_PI)/(M_PI/3.0)),5)); 
++		}
++	}
++	
++	pt.m_elas_dmg = mu/m_mu; 
++	pt.m_coll_dmg = cc/m_cc;
++	
++	// Calculate the new elastic strain energy density
++	if (m_hypSel == 1){
++		mat3ds Ce = (Fe.transpose()*Fe).sym();
++		pt.m_sed = (Ce.dotdot(Ce)-3.0)*mu;	// Neo-hooke
++	}
++	if (m_hypSel == 2){				// St.Venant-Kirchhoff
++		mat3ds Ae = ((Fe.transpose()*Fe-I).sym())*0.5; // Green-Lagrange elastic strain
++		pt.m_sed = Ae.dotdot(Ae)*mu;	
++	}
++	if (m_hypSel == 3){
++		
++		double lto = (Fe*N[1]).norm();
++		double lzo = (Fe*N[2]).norm();
++		double lpo = (Fe*Np).norm();
++		double lno = (Fe*Nn).norm();
++		
++		//int lo_opt = 1;
++		/*
++		if (m_lo_opt && t <= m_sgrSta + eps){
++			lto = (F*N[1]).norm();
++			lzo = (F*N[2]).norm();
++			lpo = (F*Np).norm();
++			lno = (F*Nn).norm();
++			// hacer G = 1?? REV; MARCOS NO LO HACE
++			// G > 1 uniaxial leads to SDB!?
++			//Gm = 1.0;
++			//Gc = 1.0;
++		}
++		if (m_lo_opt && t > m_sgrSta + eps){
++			//mat3d Fo = pt.m_Fo;
++			lto = (Fo*N[1]).norm();
++			lzo = (Fo*N[2]).norm();
++			lpo = (Fo*Np).norm();
++			lno = (Fo*Nn).norm();
++		}
++		*/
++		
++		double lmt2 = (Gm*lto)*(Gm*lto);
++		double lct2 = (Gc*lto)*(Gc*lto);
++		double lcz2 = (Gc*lzo)*(Gc*lzo);
++		double lcp2 = (Gc*lpo)*(Gc*lpo);						// deposition stretch calculation (computational purposes)
++		double lcn2 = (Gc*lno)*(Gc*lno);						// idem for symmetric
++	
++		double sede = ( mu/2.0*((Fe*Ge).dotdot(Fe*Ge)-3.0) );
++
++		double sedm = (cm/(4.0*dm)*(exp(dm*(lmt2-1.0)*(lmt2-1.0))-1.0) );
++		double sedc =  (
++				//cct/(4.0*dct)*(exp(dct*(lct2-1.0)*(lct2-1.0))-1.0)*betat +
++				//ccz/(4.0*dcz)*(exp(dcz*(lcz2-1.0)*(lcz2-1.0))-1.0)*betaz +
++				cc/(4.0*dc)*(exp(dc*(lct2-1.0)*(lct2-1.0))-1.0)*betat +
++				cc/(4.0*dc)*(exp(dc*(lcz2-1.0)*(lcz2-1.0))-1.0)*betaz +
++				cc/(4.0*dc)*(exp(dc*(lcp2-1.0)*(lcp2-1.0))-1.0)*betad +
++				cc/(4.0*dc)*(exp(dc*(lcn2-1.0)*(lcn2-1.0))-1.0)*betad 
++				);
++
++		pt.m_sed = J*(phieo * sede + phimo * sedm + phico * sedc);
++	}
++	
++	
++    	double sed = pt.m_sed;
++    
++	double sedt = sed;
++	
++	//pt.m_Wt = sed/J;	// strain energy density per unit CURRENT volume
++    
++    	// restore safe copy
++    	//et.m_F = F; et.m_J = J;
++
++	// return the total strain energy density
++	return sedt;
++}
++//-----------------------------------------------------------------------------
++// Dummy symmetric tangent to satisfy C++ base class requirements
++tens4ds FEKinematicGrowthZ::Tangent(FEMaterialPoint& mp)
++{
++	return tens4ds(0.0);
++}
+diff --git a/FEBioMech/FEKinematicGrowthZ.h b/FEBioMech/FEKinematicGrowthZ.h
+new file mode 100755
+index 0000000..67f1b23
+--- /dev/null
++++ b/FEBioMech/FEKinematicGrowthZ.h
+@@ -0,0 +1,193 @@
++/*This file is part of the FEBio source code and is licensed under the MIT license
++listed below.
++
++See Copyright-FEBio.txt for details.
++
++Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
++the City of New York, and others.
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in all
++copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++SOFTWARE.*/
++
++
++
++#pragma once
++#include "FEElasticMaterial.h"
++
++//-----------------------------------------------------------------------------
++//! Material point data for kinematic growth materials
++class FEKinematicMaterialPointZ : public FEMaterialPointData
++{
++public:
++	enum { MAX_TERMS = 6 };
++
++public:
++	//! constructor
++	FEKinematicMaterialPointZ(FEMaterialPointData* mp = nullptr);
++
++	//! copy material point data
++	FEMaterialPointData* Copy();
++
++	//! Initialize material point data
++	void Init();
++
++	//! Update material point data
++	void Update(const FETimeInfo& timeInfo);
++
++	//! Serialize data to archive
++	void Serialize(DumpStream& ar);
++
++public:
++	mat3ds	m_Se;	//!< elastic PK2 stress
++	mat3ds	m_Sep;	//!< elastic 2nd PK stress at previous time
++
++	//mat3ds	m_H[MAX_TERMS];		//!< internal variables
++	//mat3ds	m_Hp[MAX_TERMS];	//!< internal variables at previous timestep
++
++    //double  m_alpha[MAX_TERMS];     //!< exponent of right-stretch tensor in series spring
++    //double  m_alphap[MAX_TERMS];    //!< alpha at previous time step
++    
++	double	m_sed;	//!< elastic strain energy density
++	double	m_sedp;	//!< elastic strain energy density at previous time
++	
++	double	m_Jp;	//!< J at previous time
++	double	m_J;	//!< J at current time
++	
++	mat3d	m_Fgp;	//!< Fg at previous time
++	mat3d	m_Fg;	//!< Fg at current time
++	
++	double	m_svo;			//!< volumetric stress at o
++	
++	mat3d m_Fo;
++	
++	double  m_elas_dmg;
++	double  m_coll_dmg;
++	
++	double m_Wt;
++};
++
++
++//-----------------------------------------------------------------------------
++//! This class implements a large deformation visco-elastic material
++//
++class FEKinematicGrowthZ :	public FEElasticMaterial
++{
++public:
++	// NOTE: make sure that this parameter is the 
++	//       same as the MAX_TERMS in the FEKinematicMaterialPointZ class
++	enum { MAX_TERMS = FEKinematicMaterialPointZ::MAX_TERMS };
++
++public:
++	//! default constructor
++	FEKinematicGrowthZ(FEModel* pfem);
++
++	//! get the elastic base material
++	FEElasticMaterial* GetBaseMaterial();
++
++	//! Set the base material
++	void SetBaseMaterial(FEElasticMaterial* pbase);
++
++public:
++	//! stress function
++	mat3ds Stress(FEMaterialPoint& pt) override;
++
++	//! tangent function
++	tens4ds Tangent(FEMaterialPoint& pt) override;
++
++	//! tangent function (only minor symm)
++	tens4dmm TangentMm(FEMaterialPoint& pt) override;
++
++	//! strain energy density
++	double StrainEnergyDensity(FEMaterialPoint& pt) override;
++    
++    //! calculate exponent of right-stretch tensor in series spring
++    //bool SeriesStretchExponent(FEMaterialPoint& pt);
++    
++    // returns a pointer to a new material point object
++	FEMaterialPointData* CreateMaterialPointData() override;
++	
++	// In order to use the secant tangent approximation, override the UseSecantTangent() and have it return true:
++	bool UseSecantTangent() override { return m_secant_tangent; }
++
++public: 
++	// material parameters
++	//double	m_g0;			//!< intitial visco-elastic coefficient
++	//double	m_g[MAX_TERMS];	//!< visco-elastic coefficients
++	//double	m_t[MAX_TERMS];	//!< relaxation times
++	double  m_kPar;		// GAIN*RATE parameter
++	double  m_sgrSta;		// initial G&R time
++	double  m_sgrEnd;		// final G&R time
++	double  m_kJ;
++	bool    m_MBE_opt;		// option for MBE
++	bool    m_secant_tangent;  	// flag for using secant tangent calculation
++	bool	m_asym;		// type of aneurysm
++	int     m_hypSel;		// select hyperelastic model
++	bool	m_degr;		// elastin & collagen degradation
++	bool    m_alpm;		// update alpha
++	double  m_muin;
++	double  m_ccin;
++	double  m_muout;
++	double  m_ccout;
++	
++	double  m_Gm;
++	double  m_Gc;
++	double  m_Get;
++	double  m_Gez;
++	bool    m_lo_opt;		// option for stretch calc (1: Fe = Fo)
++	bool    m_writeRes;		// option for printing
++	//double m_Get;
++	//double m_Gez;
++	//
++	double m_mu;			// shear modulus
++	double m_cm;
++	double m_dm;
++	double m_cc;
++	double m_dc;
++	//double m_cct;
++	//double m_dct;
++	//double m_ccz;
++	//double m_dcz;
++	
++	double m_alpha;
++	
++	double m_betat;			
++	double m_betaz;
++	
++	double m_phieo; 
++	double m_phico; 
++	
++	double m_z_center;	// cylinder half length
++	double m_z_spread;
++	double m_nuz;		// axisymmetric deviation parameter
++	double m_nut;		// asymmetric deviation parameter
++	double m_pif;		// asymmetric angle (factor of PI)
++	
++	// Active stress
++	//double m_Tmax;
++	//double m_lamM;
++	//double m_lam0;
++	//double m_cb;
++	
++
++private:
++	FEElasticMaterial*	m_Base;	//!< pointer to elastic solid material
++
++public:
++	// declare parameter list
++	DECLARE_FECORE_CLASS();
++};
+diff --git a/FEBioMech/FESolidMaterial.cpp b/FEBioMech/FESolidMaterial.cpp
+index d96d70e..d507459 100644
+--- a/FEBioMech/FESolidMaterial.cpp
++++ b/FEBioMech/FESolidMaterial.cpp
+@@ -29,10 +29,13 @@ SOFTWARE.*/
+ #include "stdafx.h"
+ #include "FESolidMaterial.h"
+ #include "FEElasticMaterial.h"
++#include <limits>			// mod-ABC
++#include <FECore/FEModel.h>		// mod-ABC
++#include "FECore/log.h"		// to print to log file and/or screen
+ 
+ // Material parameters for FEElasticMaterial
+ BEGIN_FECORE_CLASS(FESolidMaterial, FEMaterial)
+-	ADD_PARAMETER(m_density, "density")->setUnits(UNIT_DENSITY)->MakeTopLevel(true);
++	ADD_PARAMETER(m_density, FE_RANGE_GREATER_OR_EQUAL(0.0), "density")->setUnits(UNIT_DENSITY)->MakeTopLevel(true);
+ END_FECORE_CLASS();
+ 
+ FESolidMaterial::FESolidMaterial(FEModel* pfem) : FEMaterial(pfem)
+@@ -54,7 +57,8 @@ double FESolidMaterial::Density(FEMaterialPoint& pt)
+ 
+ tens4dmm FESolidMaterial::SolidTangent(FEMaterialPoint& mp)
+ {
+-	return (UseSecantTangent() ? SecantTangent(mp) : Tangent(mp));
++	//return (UseSecantTangent() ? SecantTangent(mp) : Tangent(mp));
++	return (UseSecantTangent() ? SecantTangent(mp) : TangentMm(mp));	// mod-ABC
+ }
+ 
+ //-----------------------------------------------------------------------------
+@@ -172,7 +176,55 @@ tens4dmm FESolidMaterial::SecantTangent(FEMaterialPoint& mp, bool mat)
+             C(2,0,k,l) = C(0,2,k,l) = C(2,0,l,k) = C(0,2,l,k) = dS.xz();
+         }
+     }
++
++    tens4dmm cmm = C.pp(F)/J;
++    
++    vec3d X = mp.m_r0;
++    
++    // 1. Retrieve the current simulation time
++    double t = GetFEModel()->GetTime().currentTime;
++    // 2. Get machine epsilon for safe floating-point comparison
++    double epsm = std::numeric_limits<double>::epsilon();
++    
++    int writeRes = 0; 	// turn off printing results to out file
++    //int writeRes = 1;
+     
++    //double m_sgrSta = 0.; //1.;	// (hardcoded) G&R start time
++    double m_sgrSta = 1.;		
++    
++    if (t > m_sgrSta + epsm && writeRes == 1){
++    //if (writeRes==1) {
++    	char *msg = //"X = %f\t%f\t%f\n"
++    			"F = %f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n"
++    			"S = %f\t%f\t%f\t%f\t%f\t%f\n"
++    			"c_sec =\n"
++    			"%f\t%f\t%f\t%f\t%f\t%f\n"
++    			"%f\t%f\t%f\t%f\t%f\t%f\n"
++    			"%f\t%f\t%f\t%f\t%f\t%f\n"
++    			"%f\t%f\t%f\t%f\t%f\t%f\n"
++    			"%f\t%f\t%f\t%f\t%f\t%f\n"
++    			"%f\t%f\t%f\t%f\t%f\t%f\n"
++    			"--------------------------------------------\n";
++    	feLog(msg, //X.x,X.y,X.z,
++    	F(0,0),F(1,1),F(2,2),F(0,1),F(1,0),F(0,2),F(2,0),F(1,2),F(2,1), 
++    	S.xx(),S.yy(),S.zz(),S.xy(),S.xz(),S.yz(),
++    	cmm(0,0,0,0),cmm(0,0,1,1),cmm(0,0,2,2),cmm(0,0,0,1),cmm(0,0,1,2),cmm(0,0,2,0),
++    	cmm(1,1,0,0),cmm(1,1,1,1),cmm(1,1,2,2),cmm(1,1,0,1),cmm(1,1,1,2),cmm(1,1,2,0),
++    	cmm(2,2,0,0),cmm(2,2,1,1),cmm(2,2,2,2),cmm(2,2,0,1),cmm(2,2,1,2),cmm(2,2,2,0),
++    	cmm(0,1,0,0),cmm(0,1,1,1),cmm(0,1,2,2),cmm(0,1,0,1),cmm(0,1,1,2),cmm(0,1,2,0),
++    	cmm(1,2,0,0),cmm(1,2,1,1),cmm(1,2,2,2),cmm(1,2,0,1),cmm(1,2,1,2),cmm(1,2,2,0),
++    	cmm(2,0,0,0),cmm(2,0,1,1),cmm(2,0,2,2),cmm(2,0,0,1),cmm(2,0,1,2),cmm(2,0,2,0));
++    	/*
++    	for (int i = 0; i < 3; i++) {
++    		for (int j = 0; j < 3; j++) {
++    			for (int k = 0; k < 3; k++) {
++				feLog("%f\t%f\t%f\n",cmm(i,j,k,0),cmm(i,j,k,1),cmm(i,j,k,2));		
++			}
++		}
++    	}
++    	*/
++    	//feLog("--------------------------------------------\n");
++    }
+     if (mat) return C;
+     else {
+         
+@@ -183,3 +235,9 @@ tens4dmm FESolidMaterial::SecantTangent(FEMaterialPoint& mp, bool mat)
+         return c;
+     }
+ }
++// Default behavior: If a material doesn't have an asymmetric tangent, 
++// just get the symmetric one and convert it.	// mod-ABC
++tens4dmm FESolidMaterial::TangentMm(FEMaterialPoint& pt) 
++{
++    return tens4dmm(Tangent(pt)); 
++}
+diff --git a/FEBioMech/FESolidMaterial.h b/FEBioMech/FESolidMaterial.h
+index 6159620..bb50326 100644
+--- a/FEBioMech/FESolidMaterial.h
++++ b/FEBioMech/FESolidMaterial.h
+@@ -46,6 +46,9 @@ public:
+ 
+ 	//! calculate tangent stiffness at material point
+ 	virtual tens4ds Tangent(FEMaterialPoint& pt) = 0;
++	
++	//! calculate tangent stiffness at material point (only minor symm)
++	virtual tens4dmm TangentMm(FEMaterialPoint& pt);	// mod-ABC
+ 
+ 	//! calculate the 2nd Piola-Kirchhoff stress at material point
+ 	virtual mat3ds PK2Stress(FEMaterialPoint& pt, const mat3ds E);
+diff --git a/FECore/mat3d.hpp b/FECore/mat3d.hpp
+index 478ae03..743567b 100644
+--- a/FECore/mat3d.hpp
++++ b/FECore/mat3d.hpp
+@@ -1200,3 +1200,24 @@ inline void mat3d::exp(const vec3d& v)
+ 		*this = E;
+ 	}
+ }
++// Computes the full asymmetric dyadic (outer) product of two vectors: a (x) b 	// MOD-ABC
++inline mat3d dyad1(const vec3d& a, const vec3d& b)
++{
++	return mat3d(
++		a.x * b.x, a.x * b.y, a.x * b.z,
++		a.y * b.x, a.y * b.y, a.y * b.z,
++		a.z * b.x, a.z * b.y, a.z * b.z
++	);
++}
++// Computes the symmetric dyadic product of two vectors: 1/2 * (a (x) b + b (x) a) 	// MOD-ABC
++inline mat3ds dyad1s(const vec3d& a, const vec3d& b)
++{
++	return mat3ds(
++		a.x * b.x,
++		a.y * b.y,
++		a.z * b.z,
++		0.5 * (a.x * b.y + a.y * b.x),
++		0.5 * (a.y * b.z + a.z * b.y),
++		0.5 * (a.x * b.z + a.z * b.x)
++	);
++}

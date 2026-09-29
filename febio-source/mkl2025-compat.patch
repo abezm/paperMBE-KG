@@ -1,0 +1,134 @@
+diff --git a/NumCore/ILU0_Preconditioner.cpp b/NumCore/ILU0_Preconditioner.cpp
+index 4595b15..0f0bf56 100644
+--- a/NumCore/ILU0_Preconditioner.cpp
++++ b/NumCore/ILU0_Preconditioner.cpp
+@@ -38,6 +38,7 @@ SOFTWARE.*/
+ #include "mkl_rci.h"
+ #include "mkl_blas.h"
+ #include "mkl_spblas.h"
++#include "MKLTriSolve.h"
+ #endif // MKL_ISS
+ 
+ BEGIN_FECORE_CLASS(ILU0_Preconditioner, Preconditioner)
+@@ -108,11 +109,11 @@ bool ILU0_Preconditioner::BackSolve(double* x, double* y)
+ 	char cvar1 = 'L';
+ 	char cvar = 'N';
+ 	char cvar2 = 'U';
+-	mkl_dcsrtrsv(&cvar1, &cvar, &cvar2, &ivar, &m_bilu0[0], ia, ja, &y[0], &m_tmp[0]);
++	csrtrsv(cvar1, cvar, cvar2, ivar, &m_bilu0[0], ia, ja, &y[0], &m_tmp[0]);
+ 	cvar1 = 'U';
+ 	cvar = 'N';
+ 	cvar2 = 'N';
+-	mkl_dcsrtrsv(&cvar1, &cvar, &cvar2, &ivar, &m_bilu0[0], ia, ja, &m_tmp[0], &x[0]);
++	csrtrsv(cvar1, cvar, cvar2, ivar, &m_bilu0[0], ia, ja, &m_tmp[0], &x[0]);
+ 
+ 	return true;
+ }
+diff --git a/NumCore/ILUT_Preconditioner.cpp b/NumCore/ILUT_Preconditioner.cpp
+index 33168b5..7788a2e 100644
+--- a/NumCore/ILUT_Preconditioner.cpp
++++ b/NumCore/ILUT_Preconditioner.cpp
+@@ -38,6 +38,7 @@ SOFTWARE.*/
+ #include "mkl_rci.h"
+ #include "mkl_blas.h"
+ #include "mkl_spblas.h"
++#include "MKLTriSolve.h"
+ #endif // MKL_ISS
+ 
+ BEGIN_FECORE_CLASS(ILUT_Preconditioner, Preconditioner)
+@@ -114,11 +115,11 @@ bool ILUT_Preconditioner::BackSolve(double* x, double* y)
+ 	char cvar1 = 'L';
+ 	char cvar = 'N';
+ 	char cvar2 = 'U';
+-	mkl_dcsrtrsv(&cvar1, &cvar, &cvar2, &ivar, &m_bilut[0], &m_ibilut[0], &m_jbilut[0], y, &m_tmp[0]);
++	csrtrsv(cvar1, cvar, cvar2, ivar, &m_bilut[0], &m_ibilut[0], &m_jbilut[0], y, &m_tmp[0]);
+ 	cvar1 = 'U';
+ 	cvar = 'N';
+ 	cvar2 = 'N';
+-	mkl_dcsrtrsv(&cvar1, &cvar, &cvar2, &ivar, &m_bilut[0], &m_ibilut[0], &m_jbilut[0], &m_tmp[0], x);
++	csrtrsv(cvar1, cvar, cvar2, ivar, &m_bilut[0], &m_ibilut[0], &m_jbilut[0], &m_tmp[0], x);
+ 
+ 	return true;
+ }
+diff --git a/NumCore/IncompleteCholesky.cpp b/NumCore/IncompleteCholesky.cpp
+index 8a9c865..9ea9022 100644
+--- a/NumCore/IncompleteCholesky.cpp
++++ b/NumCore/IncompleteCholesky.cpp
+@@ -39,6 +39,7 @@ SOFTWARE.*/
+ #include "mkl_rci.h"
+ #include "mkl_blas.h"
+ #include "mkl_spblas.h"
++#include "MKLTriSolve.h"
+ #endif // MKL_ISS
+ 
+ IncompleteCholesky::IncompleteCholesky(FEModel* fem) : Preconditioner(fem)
+@@ -169,11 +170,11 @@ bool IncompleteCholesky::BackSolve(double* x, double* y)
+ 	char cvar1 = 'U';
+ 	char cvar = 'T';
+ 	char cvar2 = 'N';
+-	mkl_dcsrtrsv(&cvar1, &cvar, &cvar2, &ivar, pa, ia, ja, &y[0], &z[0]);
++	csrtrsv(cvar1, cvar, cvar2, ivar, pa, ia, ja, &y[0], &z[0]);
+ 	cvar1 = 'U';
+ 	cvar = 'N';
+ 	cvar2 = 'N';
+-	mkl_dcsrtrsv(&cvar1, &cvar, &cvar2, &ivar, pa, ia, ja, &z[0], &x[0]);
++	csrtrsv(cvar1, cvar, cvar2, ivar, pa, ia, ja, &z[0], &x[0]);
+ 
+ 	return true;
+ #else 
+diff --git a/NumCore/MKLTriSolve.h b/NumCore/MKLTriSolve.h
+new file mode 100644
+index 0000000..ca14b7e
+--- /dev/null
++++ b/NumCore/MKLTriSolve.h
+@@ -0,0 +1,50 @@
++/*This file is part of the FEBio source code and is licensed under the MIT license
++listed below.
++
++See Copyright-FEBio.txt for details.
++
++Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
++the City of New York, and others.
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in all
++copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++SOFTWARE.*/
++
++#pragma once
++#include "mkl_spblas.h"
++
++// The NIST-style sparse BLAS triangular solver mkl_dcsrtrsv was removed from
++// oneMKL (2025+). This helper provides the same one-based CSR triangular solve
++// through the inspector-executor API, which is available in all supported MKL
++// versions. Solves op(T)*x = y, where T is the triangle of A selected by uplo.
++inline bool csrtrsv(char uplo, char trans, char diag, int n, double* a, int* ia, int* ja, double* y, double* x)
++{
++	sparse_matrix_t A = nullptr;
++	if (mkl_sparse_d_create_csr(&A, SPARSE_INDEX_BASE_ONE, n, n, ia, ia + 1, ja, a) != SPARSE_STATUS_SUCCESS) return false;
++
++	matrix_descr descr;
++	descr.type = SPARSE_MATRIX_TYPE_TRIANGULAR;
++	descr.mode = ((uplo == 'L') || (uplo == 'l')) ? SPARSE_FILL_MODE_LOWER : SPARSE_FILL_MODE_UPPER;
++	descr.diag = ((diag == 'U') || (diag == 'u')) ? SPARSE_DIAG_UNIT : SPARSE_DIAG_NON_UNIT;
++
++	sparse_operation_t op = ((trans == 'T') || (trans == 't')) ? SPARSE_OPERATION_TRANSPOSE : SPARSE_OPERATION_NON_TRANSPOSE;
++
++	sparse_status_t status = mkl_sparse_d_trsv(op, 1.0, A, descr, y, x);
++	mkl_sparse_destroy(A);
++
++	return (status == SPARSE_STATUS_SUCCESS);
++}
