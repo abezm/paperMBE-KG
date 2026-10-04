@@ -1,0 +1,11 @@
+morphology,d_e_percent,d_c_percent,deck,converged,t_last_converged,J_max_elements,lambda_r_over_lambda_ro_node20
+fusiform,13,13,lad-fus-d13p000-lev2.feb,yes,11.0,2.273814,1.503849
+fusiform,17,17,lad-fus-d17p000-lev.feb,yes,11.0,3.662781,1.829058
+fusiform,19,19,lad-fus-d19p000-v5.feb,yes,11.0,5.181112,2.089448
+fusiform,20,20,lad-fus-d20p000-v5.feb,yes,11.0,6.488273,2.271334
+fusiform,21,21,lad-fus-d21p000-bis.feb,yes,11.0,8.623049,2.517940
+saccular,22,22,lad-sac-d22p000-lev2.feb,yes,11.0,1.496474,1.525666
+saccular,27,27,lad-sac-d27p000-lev2.feb,yes,11.0,1.710197,1.733830
+saccular,32,32,lad-sac-d32p000-lev2.feb,yes,11.0,2.046117,2.016481
+saccular,37,37,lad-sac-d37p000-lev2.feb,yes,11.0,2.657078,2.434486
+saccular,38,38,lad-sac-d38p000-v5.feb,yes,11.0,2.838340,2.545164

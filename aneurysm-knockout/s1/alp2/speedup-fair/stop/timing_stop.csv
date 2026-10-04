@@ -1,0 +1,4 @@
+case,deck,reps,wall_min_s,wall_all,steps,newton,per_stage_steps_iters
+mbe-1p10,mbe-1p10.feb,3,16.78,16.80 16.78 16.80,11,37,1/7 | 10/30
+full-ds5,fus-sl100-2st-ds5-stop.feb,3,42.57,42.62 42.57 42.67,30,89,1/7 | 29/82
+full-ds1,fus-sl100-2st-ds1-stop.feb,3,195.39,197.18 196.31 195.39,146,412,1/7 | 145/405

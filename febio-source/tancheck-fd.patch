@@ -1,0 +1,434 @@
+diff --git a/FEBioMech/FEElasticSolidDomain.cpp b/FEBioMech/FEElasticSolidDomain.cpp
+index 730a7ce..08e6266 100644
+--- a/FEBioMech/FEElasticSolidDomain.cpp
++++ b/FEBioMech/FEElasticSolidDomain.cpp
+@@ -38,6 +38,7 @@ SOFTWARE.*/
+ #include "FEBioMech.h"
+ #include <FECore/FELinearSystem.h>
+ #include "FEResidualVector.h"
++#include "FEKinematicGrowthZ.h"	// TANCHECK
+ 
+ //-----------------------------------------------------------------------------
+ //! constructor
+@@ -446,6 +447,15 @@ void FEElasticSolidDomain::StiffnessMatrix(FELinearSystem& LS)
+ 			// calculate material stiffness
+ 			ElementMaterialStiffness(el, ke);
+ 
++			// TANCHECK: element-level finite-difference check
++			{
++				FEKinematicGrowthZ* pkg = dynamic_cast<FEKinematicGrowthZ*>(m_pMat);
++				const FETimeInfo& tpc = GetFEModel()->GetTime();
++				double tt = tpc.currentTime;
++				if (pkg && pkg->m_fd_check && (el.GetID() == pkg->m_fd_elem) && (fabs(tt - pkg->m_fd_time) < 1.0e-8*std::max(1.0, fabs(tt))))
++					ElementFDCheck(iel, ke, pkg->m_fd_eps);
++			}
++
+ /*			// assign symmetic parts
+ 			// TODO: Can this be omitted by changing the Assemble routine so that it only
+ 			// grabs elements from the upper diagonal matrix?
+@@ -782,3 +792,62 @@ FEStandardElasticSolidDomain::FEStandardElasticSolidDomain(FEModel* fem) : FEEla
+ {
+ 
+ }
++
++
++//-----------------------------------------------------------------------------
++// TANCHECK (optional, debug only)
++// Central finite differences of the element internal force vector with respect to the
++// current nodal coordinates, compared with the element stiffness (geometric + material)
++// assembled by StiffnessMatrix(). K_fd(:,b) = -(fe(x + h e_b) - fe(x - h e_b))/(2h),
++// since ElementInternalForce returns fe = -f_int. History variables are not changed:
++// Stress() reads only the converged history (Jp, Fo, svo); the state of the element is
++// recomputed at the unperturbed coordinates at the end.
++void FEElasticSolidDomain::ElementFDCheck(int iel, matrix& ke, double eps)
++{
++	FESolidElement& el = m_Elem[iel];
++	const FETimeInfo& tp = GetFEModel()->GetTime();
++	int neln = el.Nodes();
++	int ndof = 3*neln;
++	FEMesh& mesh = *m_pMesh;
++
++	// element size
++	double hmax = 0.0;
++	for (int i = 0; i < neln; ++i) for (int j = 0; j < neln; ++j)
++		hmax = std::max(hmax, (mesh.Node(el.m_node[i]).m_rt - mesh.Node(el.m_node[j]).m_rt).norm());
++	double h = eps*hmax;
++
++	matrix Kfd(ndof, ndof); Kfd.zero();
++	vector<double> fp(ndof), fm(ndof);
++	for (int a = 0; a < neln; ++a)
++		for (int c = 0; c < 3; ++c)
++		{
++			FENode& node = mesh.Node(el.m_node[a]);
++			vec3d r0 = node.m_rt;
++			for (int sg = 0; sg < 2; ++sg)
++			{
++				vec3d r = r0;
++				double d = (sg == 0 ? h : -h);
++				if (c == 0) r.x += d; else if (c == 1) r.y += d; else r.z += d;
++				node.m_rt = r;
++				UpdateElementStress(iel, tp);
++				vector<double>& f = (sg == 0 ? fp : fm);
++				for (int k = 0; k < ndof; ++k) f[k] = 0.0;
++				ElementInternalForce(el, f);
++			}
++			node.m_rt = r0;
++			for (int k = 0; k < ndof; ++k) Kfd[k][3*a + c] = -(fp[k] - fm[k])/(2.0*h);
++		}
++	// restore the state at the unperturbed coordinates
++	UpdateElementStress(iel, tp);
++
++	double kmax = 0.0, emax = 0.0, asym = 0.0; int ei = 0, ej = 0;
++	for (int i = 0; i < ndof; ++i) for (int j = 0; j < ndof; ++j)
++	{
++		kmax = std::max(kmax, fabs(Kfd[i][j]));
++		double e = fabs(ke[i][j] - Kfd[i][j]);
++		if (e > emax) { emax = e; ei = i; ej = j; }
++		asym = std::max(asym, fabs(Kfd[i][j] - Kfd[j][i]));
++	}
++	feLog("EFDCHK t=%.10g elem=%d nodes=%d h=%.3e max|K_fd|=%.6e max|ke-K_fd|=%.6e at (%d,%d) ke=%.10e K_fd=%.10e rel=%.3e asym(K_fd)=%.3e\n",
++		tp.currentTime, el.GetID(), neln, h, kmax, emax, ei, ej, ke[ei][ej], Kfd[ei][ej], (kmax > 0 ? emax/kmax : 0.0), asym);
++}
+diff --git a/FEBioMech/FEElasticSolidDomain.h b/FEBioMech/FEElasticSolidDomain.h
+index b5a5971..b89b0cb 100644
+--- a/FEBioMech/FEElasticSolidDomain.h
++++ b/FEBioMech/FEElasticSolidDomain.h
+@@ -112,6 +112,7 @@ public:
+ 
+ 	//! Calculates the internal stress vector for solid elements
+ 	void ElementInternalForce(FESolidElement& el, vector<double>& fe);
++	void ElementFDCheck(int iel, matrix& ke, double eps);	// TANCHECK
+ 
+     //! Calculates the inertial force vector for solid elements
+     void ElementInertialForce(FESolidElement& el, vector<double>& fe);
+diff --git a/FEBioMech/FEKinematicGrowthZ.cpp b/FEBioMech/FEKinematicGrowthZ.cpp
+index a9d7a56..46344f5 100755
+--- a/FEBioMech/FEKinematicGrowthZ.cpp
++++ b/FEBioMech/FEKinematicGrowthZ.cpp
+@@ -68,6 +68,13 @@ BEGIN_FECORE_CLASS(FEKinematicGrowthZ, FEElasticMaterial)
+ 	ADD_PARAMETER(m_hypSel, "hyperels_mod"); // 6. hyperelastic model option 
+ 	ADD_PARAMETER(m_degr,   "ec_degrad"); // 7. properties are degraded w this option 
+ 	ADD_PARAMETER(m_alpm,   "alp_update"); // 8. alpha is updated w this option 
++
++	// TANCHECK: finite-difference check of TangentMm (debug only)
++	ADD_PARAMETER(m_fd_check, "fd_check");
++	ADD_PARAMETER(m_fd_time,  "fd_time");
++	ADD_PARAMETER(m_fd_elem,  "fd_elem");
++	ADD_PARAMETER(m_fd_gp,    "fd_gp");
++	ADD_PARAMETER(m_fd_eps,   "fd_eps");
+ 	
+ 	// ############## secant tangent option ##############
+ 	ADD_PARAMETER(m_secant_tangent, "secant_tangent");	// 8. secant tangent
+@@ -185,6 +192,10 @@ void FEKinematicMaterialPointZ::Serialize(DumpStream& ar)
+ FEKinematicGrowthZ::FEKinematicGrowthZ(FEModel* pfem) : FEElasticMaterial(pfem)
+ {
+ 	m_Base = 0;
++	// TANCHECK
++	m_fd_check = 0; m_fd_time = -1.0; m_fd_elem = 1; m_fd_gp = 0; m_fd_eps = 1.0e-6;
++	m_dbg_infd = false; m_dbg_freeze = false; m_dbg_alpha = 0.0; m_dbg_alpha_cur = 0.0;
++	m_dbg_svx = 0.0; m_dbg_p = 0.0; m_dbg_palg = 0.0; m_dbg_stage = 0;
+ }
+ 
+ //-----------------------------------------------------------------------------
+@@ -459,6 +470,8 @@ mat3ds FEKinematicGrowthZ::Stress(FEMaterialPoint& mp)
+ 		Nn = N[1]*sin(alpha)-N[2]*cos(alpha);	// idem for symmetric
+ 		*/
+     	}
++    	m_dbg_alpha_cur = alpha;			// TANCHECK
++    	if (m_dbg_freeze) alpha = m_dbg_alpha;	// TANCHECK: frozen fibre angle
+     	
+     	vec3d Np = Nt * sin(alpha) + Nz * cos(alpha);
+     	vec3d Nn = Nt * sin(alpha) - Nz * cos(alpha);
+@@ -678,6 +691,7 @@ mat3ds FEKinematicGrowthZ::Stress(FEMaterialPoint& mp)
+ 	    	
+ 	    	// store Fo
+ 	    	pt.m_Fo = F;
++	    	m_dbg_S = S; m_dbg_Sx = J*Se; m_dbg_svx = 0.0; m_dbg_p = 0.0; m_dbg_palg = 0.0; m_dbg_stage = 1;	// TANCHECK
+     		
+     	}
+     	else {
+@@ -695,6 +709,8 @@ mat3ds FEKinematicGrowthZ::Stress(FEMaterialPoint& mp)
+ 		
+ 	    	// total PK-2 stress, S_n+1
+ 	    	S = Sx - J*p*Ci;   
++	    	m_dbg_S = S; m_dbg_Sx = Sx; m_dbg_svx = svx; m_dbg_p = p; m_dbg_stage = 2;	// TANCHECK
++	    	m_dbg_palg = (m_MBE_opt == 0 ? -svo*log(J/Jp)/(m_kPar*dt) : 0.0);	// TANCHECK
+ 	    	
+ 	    	// prints stuff
+ 		//int m_writeRes = 0;
+@@ -1263,6 +1279,7 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
+ 	    	mat3ds FSeFt = (F*Se*F.transpose()).sym();
+ 	    	mat3ds Iden(1.0, 1.0, 1.0, 0.0, 0.0, 0.0);
+ 	    	c = J*ce + dyad1mm(FSeFt, Iden) + cp + calph;
++	    	m_dbg_cx = J*ce + dyad1mm(FSeFt, Iden); m_dbg_cp = cp; m_dbg_cpAl = tens4dmm(0.0); m_dbg_calph = calph;	// TANCHECK
+ 	    	
+ 	    	// total PK-2 stress, S_n+1 / only to print
+ 	    	S = J*Se + Ci*lm*log(Jdep*J);	// Stage I: S^x = J S_e, since F_g = 1	
+@@ -1314,6 +1331,7 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
+ 			
+ 		// total spatial tangent, c_n+1
+ 		c = cx + cp + cpAl + calph;	// includes the variation of alpha
++		m_dbg_cx = cx; m_dbg_cp = cp; m_dbg_cpAl = cpAl; m_dbg_calph = calph;	// TANCHECK
+ 		//c = ce;	// to test
+ 		//c = ce + cp;	// to test
+ 		//c = cx;	// to test
+@@ -1350,6 +1368,10 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
+     		c(1,2,0,0),c(1,2,1,1),c(1,2,2,2),c(1,2,0,1),c(1,2,1,2),c(1,2,2,0),
+     		c(2,0,0,0),c(2,0,1,1),c(2,0,2,2),c(2,0,0,1),c(2,0,1,2),c(2,0,2,0));
+     	}
++	// TANCHECK: finite-difference check at the chosen time, element and integration point
++	if (m_fd_check && !m_dbg_infd && (fabs(t - m_fd_time) < 1.0e-8*std::max(1.0, fabs(t))) && mp.m_elem
++		&& (mp.m_elem->GetID() == m_fd_elem) && ((m_fd_gp < 0) || (mp.m_index == m_fd_gp)))
++		FDCheck(mp, c);
+ 	return c;
+ }
+ 
+@@ -1723,3 +1745,158 @@ tens4ds FEKinematicGrowthZ::Tangent(FEMaterialPoint& mp)
+ {
+ 	return tens4ds(0.0);
+ }
++
++//=============================================================================
++// TANCHECK (optional, debug only)
++// Central finite differences of the PK2 stress S(C) returned by Stress(), at fixed
++// history (Jp, Fo, svo, current time and time step). The perturbed state uses
++// F' = U' = sqrt(C'), so S is evaluated as a function of C only. The material
++// tangent 2 dS/dC is pushed forward, c = (1/J) F F F F : C, with the F of the
++// current call, and compared with the spatial tangent returned by TangentMm and
++// with its term groups (cx, cp, cpAl, calph).
++static mat3d tc_sqrt(const mat3ds& C, double& res)
++{
++	double l[3]; vec3d r[3];
++	C.eigen(l, r);
++	mat3ds U(0.0);
++	for (int a = 0; a < 3; ++a) { vec3d e = r[a]; e.unit(); U += dyad(e)*sqrt(l[a]); }
++	res = 0.0;
++	mat3d U2 = mat3d(U)*mat3d(U);
++	for (int i = 0; i < 3; ++i) for (int j = 0; j < 3; ++j) res = std::max(res, fabs(U2(i,j) - C(i,j)));
++	return mat3d(U);
++}
++
++void FEKinematicGrowthZ::FDCheck(FEMaterialPoint& mp, const tens4dmm& c)
++{
++	FEElasticMaterialPoint& ep = *mp.ExtractData<FEElasticMaterialPoint>();
++	FEKinematicMaterialPointZ& pt = *mp.ExtractData<FEKinematicMaterialPointZ>();
++	double t  = GetFEModel()->GetTime().currentTime;
++	double dt = GetTimeInfo().timeIncrement;
++
++	// save everything Stress() writes
++	mat3d  F0 = ep.m_F; double J0 = ep.m_J;
++	double sJ = pt.m_J; mat3d sFg = pt.m_Fg; double sed = pt.m_elas_dmg, scd = pt.m_coll_dmg;
++	double ssvo = pt.m_svo; mat3d sFo = pt.m_Fo;
++	tens4dmm gcx = m_dbg_cx, gcp = m_dbg_cp, gcpAl = m_dbg_cpAl, gcal = m_dbg_calph;
++
++	m_dbg_infd = true; m_dbg_freeze = false;
++
++	// base state with the F of the call
++	mat3ds C0 = ep.RightCauchyGreen();
++	Stress(mp);
++	double alpha0 = m_dbg_alpha_cur;
++	mat3ds S0 = m_dbg_S;
++	int stage = m_dbg_stage;
++	double svx0 = m_dbg_svx, p0 = m_dbg_p, palg0 = m_dbg_palg;
++	// base state with F = sqrt(C) (checks that S depends on C only)
++	double res = 0.0, maxres = 0.0;
++	mat3d U0 = tc_sqrt(C0, res); maxres = res;
++	ep.m_F = U0; ep.m_J = U0.det();
++	Stress(mp);
++	mat3ds S0U = m_dbg_S;
++	double dSU = 0.0;
++	for (int i = 0; i < 3; ++i) for (int j = 0; j < 3; ++j) dSU = std::max(dSU, fabs(S0U(i,j) - S0(i,j)));
++
++	double cmax = 0.0;
++	for (int i = 0; i < 3; ++i) for (int j = 0; j < 3; ++j) cmax = std::max(cmax, fabs(C0(i,j)));
++	double h = m_fd_eps*cmax;
++
++	// material tangents: [0] S total, [1] Sx (angle free), [2] Sx (angle frozen), [3] S_alg = -J p_alg C^-1, [4] S_con = S - Sx - S_alg
++	const int NG = 5;
++	static double CM[NG][3][3][3][3];
++	for (int g = 0; g < NG; ++g) for (int a = 0; a < 81; ++a) (&CM[g][0][0][0][0])[a] = 0.0;
++	const int KL[6][2] = {{0,0},{1,1},{2,2},{0,1},{1,2},{0,2}};
++	for (int m = 0; m < 6; ++m)
++	{
++		int K = KL[m][0], L = KL[m][1];
++		mat3ds dC(0.0); dC(K,L) = h;		// symmetric: sets (K,L) and (L,K)
++		mat3ds Sv[2][NG];
++		for (int sg = 0; sg < 2; ++sg)
++		{
++			mat3ds Cq = (sg == 0 ? C0 + dC : C0 - dC);
++			mat3d Fq = tc_sqrt(Cq, res); maxres = std::max(maxres, res);
++			ep.m_F = Fq; ep.m_J = Fq.det();
++			double Jq = ep.m_J; mat3ds Ciq = Cq.inverse();
++			m_dbg_freeze = false; Stress(mp);
++			mat3ds S = m_dbg_S, Sx = m_dbg_Sx; double palg = m_dbg_palg;
++			mat3ds Salg = Ciq*(-Jq*palg);
++			m_dbg_freeze = true; m_dbg_alpha = alpha0; Stress(mp); m_dbg_freeze = false;
++			mat3ds Sxf = m_dbg_Sx;
++			Sv[sg][0] = S; Sv[sg][1] = Sx; Sv[sg][2] = Sxf; Sv[sg][3] = Salg; Sv[sg][4] = S - Sx - Salg;
++		}
++		double fac = (K == L ? 1.0/h : 0.5/h);
++		for (int g = 0; g < NG; ++g)
++			for (int I = 0; I < 3; ++I) for (int J = 0; J < 3; ++J)
++			{
++				double d = (Sv[0][g](I,J) - Sv[1][g](I,J))*fac;
++				CM[g][I][J][K][L] = d; CM[g][I][J][L][K] = d;
++			}
++	}
++
++	// restore the state of the call
++	ep.m_F = F0; ep.m_J = J0;
++	pt.m_J = sJ; pt.m_Fg = sFg; pt.m_elas_dmg = sed; pt.m_coll_dmg = scd; pt.m_svo = ssvo; pt.m_Fo = sFo;
++	m_dbg_cx = gcx; m_dbg_cp = gcp; m_dbg_cpAl = gcpAl; m_dbg_calph = gcal;
++	m_dbg_infd = false; m_dbg_freeze = false;
++
++	// push forward with the F of the call
++	static double cs[NG][3][3][3][3];
++	for (int g = 0; g < NG; ++g)
++		for (int i = 0; i < 3; ++i) for (int j = 0; j < 3; ++j) for (int k = 0; k < 3; ++k) for (int l = 0; l < 3; ++l)
++		{
++			double sum = 0.0;
++			for (int I = 0; I < 3; ++I) for (int J = 0; J < 3; ++J) for (int K = 0; K < 3; ++K) for (int L = 0; L < 3; ++L)
++				sum += F0(i,I)*F0(j,J)*F0(k,K)*F0(l,L)*CM[g][I][J][K][L];
++			cs[g][i][j][k][l] = sum/J0;
++		}
++
++	// coded groups and FD counterparts (6x6 Voigt: 00 11 22 01 12 02)
++	const char* gname[5] = {"total", "cx", "calph", "cpAl", "cp"};
++	tens4dmm gcode[5] = {c, gcx, gcal, gcpAl, gcp};
++	double fd[5][6][6], cd[5][6][6];
++	for (int a = 0; a < 6; ++a) for (int b = 0; b < 6; ++b)
++	{
++		int i = KL[a][0], j = KL[a][1], k = KL[b][0], l = KL[b][1];
++		fd[0][a][b] = cs[0][i][j][k][l];
++		fd[1][a][b] = cs[2][i][j][k][l];
++		fd[2][a][b] = cs[1][i][j][k][l] - cs[2][i][j][k][l];
++		fd[3][a][b] = cs[3][i][j][k][l];
++		fd[4][a][b] = cs[4][i][j][k][l];
++		for (int g = 0; g < 5; ++g) cd[g][a][b] = gcode[g](i,j,k,l);
++	}
++	double ref = 0.0;
++	for (int a = 0; a < 6; ++a) for (int b = 0; b < 6; ++b) ref = std::max(ref, fabs(fd[0][a][b]));
++
++	int iel = mp.m_elem->GetID();
++	feLog("FDCHK ==== t=%.10g dt=%.6g elem=%d gp=%d stage=%d MBE=%d alp_update=%d\n", t, dt, iel, mp.m_index, stage, (int)m_MBE_opt, (int)m_alpm);
++	feLog("FDCHK J=%.15e Jp=%.15e svo=%.10e svx=%.10e p=%.10e p_alg=%.10e alpha=%.10f deg\n", J0, pt.m_Jp, pt.m_svo, svx0, p0, palg0, alpha0*180.0/M_PI);
++	feLog("FDCHK h=%.3e (fd_eps=%.1e, max|C|=%.6g) max|U^2-C|=%.3e max|S(F)-S(sqrt C)|=%.3e max|c_fd total|=%.6e\n", h, m_fd_eps, cmax, maxres, dSU, ref);
++	for (int g = 0; g < 5; ++g)
++	{
++		if (stage == 1 && g > 0) break;
++		double emax = 0.0, fmax = 0.0, cmx = 0.0; int ea = 0, eb = 0;
++		for (int a = 0; a < 6; ++a) for (int b = 0; b < 6; ++b)
++		{
++			double e = fabs(cd[g][a][b] - fd[g][a][b]);
++			if (e > emax) { emax = e; ea = a; eb = b; }
++			fmax = std::max(fmax, fabs(fd[g][a][b])); cmx = std::max(cmx, fabs(cd[g][a][b]));
++		}
++		double asym_c = 0.0, asym_f = 0.0;
++		for (int a = 0; a < 6; ++a) for (int b = 0; b < 6; ++b)
++		{
++			asym_c = std::max(asym_c, fabs(cd[g][a][b] - cd[g][b][a]));
++			asym_f = std::max(asym_f, fabs(fd[g][a][b] - fd[g][b][a]));
++		}
++		feLog("FDCHK group %-6s max|code|=%.6e max|fd|=%.6e max|code-fd|=%.6e at (%d,%d) rel_to_total=%.3e rel_to_group=%.3e asym(code)=%.3e asym(fd)=%.3e\n",
++			gname[g], cmx, fmax, emax, ea, eb, (ref > 0 ? emax/ref : 0.0), (fmax > 0 ? emax/fmax : 0.0), asym_c, asym_f);
++	}
++	for (int g = 0; g < 5; ++g)
++	{
++		if (stage == 1 && g > 0) break;
++		for (int a = 0; a < 6; ++a)
++		{
++			feLog("FDCHK %-6s code row%d:", gname[g], a); for (int b = 0; b < 6; ++b) feLog(" %+.8e", cd[g][a][b]); feLog("\n");
++			feLog("FDCHK %-6s fd   row%d:", gname[g], a); for (int b = 0; b < 6; ++b) feLog(" %+.8e", fd[g][a][b]); feLog("\n");
++		}
++	}
++}
+diff --git a/FEBioMech/FEKinematicGrowthZ.h b/FEBioMech/FEKinematicGrowthZ.h
+index 67f1b23..31f8d74 100755
+--- a/FEBioMech/FEKinematicGrowthZ.h
++++ b/FEBioMech/FEKinematicGrowthZ.h
+@@ -184,6 +184,22 @@ public:
+ 	//double m_cb;
+ 	
+ 
++	// TANCHECK: finite-difference check of TangentMm
++	int     m_fd_check;	// 1: run the check
++	double  m_fd_time;	// time at which the check runs
++	int     m_fd_elem;	// element ID (1-based)
++	int     m_fd_gp;	// integration point index (0-based), -1: all
++	double  m_fd_eps;	// relative perturbation of C
++	bool    m_dbg_infd;	// true while the check calls Stress()
++	bool    m_dbg_freeze;	// true: Stress() uses m_dbg_alpha as fibre angle
++	double  m_dbg_alpha;	// frozen fibre angle (rad)
++	double  m_dbg_alpha_cur;	// fibre angle of the last Stress() call (rad)
++	mat3ds  m_dbg_S, m_dbg_Sx;	// PK2 stress and extra PK2 stress of the last Stress() call
++	double  m_dbg_svx, m_dbg_p, m_dbg_palg;	// sigma_v^x, p, algorithmic part of p
++	int     m_dbg_stage;	// 1 or 2
++	tens4dmm m_dbg_cx, m_dbg_cp, m_dbg_cpAl, m_dbg_calph;	// spatial term groups of TangentMm
++	void FDCheck(FEMaterialPoint& mp, const tens4dmm& c);
++
+ private:
+ 	FEElasticMaterial*	m_Base;	//!< pointer to elastic solid material
+ 
+diff --git a/FEBioMech/FESolidSolver2.cpp b/FEBioMech/FESolidSolver2.cpp
+index dafeb4c..5c0e1ae 100644
+--- a/FEBioMech/FESolidSolver2.cpp
++++ b/FEBioMech/FESolidSolver2.cpp
+@@ -56,6 +56,7 @@ SOFTWARE.*/
+ #include "FESolidAnalysis.h"
+ #include "FETrussMaterial.h"
+ #include "FELinearTrussDomain.h"
++#include "FEKinematicGrowthZ.h"	// TANCHECK
+ #include "FEMechModel.h"
+ #include "FERigidBody.h"
+ 
+@@ -66,6 +67,7 @@ BEGIN_FECORE_CLASS(FESolidSolver2, FENewtonSolver)
+ 		ADD_PARAMETER(m_Dtol      , FE_RANGE_GREATER_OR_EQUAL(0.0), "dtol"        );
+ 		ADD_PARAMETER(m_Etol      , FE_RANGE_GREATER_OR_EQUAL(0.0), "etol");
+ 		ADD_PARAMETER(m_Rtol      , FE_RANGE_GREATER_OR_EQUAL(0.0), "rtol");
++		//ADD_PARAMETER(m_Rmin      , FE_RANGE_GREATER_OR_EQUAL(0.0), "min_residual");
+ 		ADD_PARAMETER(m_rhoi      , "rhoi"        );
+ 		ADD_PARAMETER(m_alpha     , "alpha"       );
+ 		ADD_PARAMETER(m_beta      , "beta"        );
+@@ -1044,6 +1046,33 @@ bool FESolidSolver2::Quasin()
+ 		// solve the equations
+ 		SolveEquations(m_ui, m_R0);
+ 
++		// TANCHECK: directional check of the global Jacobian
++		{
++			FEKinematicGrowthZ* pkg = nullptr;
++			for (int im = 0; im < fem.Materials(); ++im) { pkg = dynamic_cast<FEKinematicGrowthZ*>(fem.GetMaterial(im)); if (pkg) break; }
++			if (pkg && pkg->m_fd_check && (fabs(tp.currentTime - pkg->m_fd_time) < 1.0e-8*std::max(1.0, fabs(tp.currentTime))))
++			{
++				// R(u + s du) - (1 - s) R0 = O(s^2) when K du = R0 and K = -dR/du
++				int neq = (int)m_ui.size();
++				vector<double> us(neq), Rs(neq);
++				double nR0 = sqrt(m_R0*m_R0), ndu = sqrt(m_ui*m_ui);
++				feLog("GFDCHK t=%.10g iter=%d |R0|=%.6e |du|=%.6e\n", tp.currentTime, m_niter + 1, nR0, ndu);
++				const double sv[7] = {1.0, 1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6};
++				for (int is = 0; is < 7; ++is)
++				{
++					double sc = sv[is];
++					for (int i = 0; i < neq; ++i) us[i] = sc*m_ui[i];
++					Update(us);
++					Residual(Rs);
++					double e = 0.0;
++					for (int i = 0; i < neq; ++i) { double d = Rs[i] - (1.0 - sc)*m_R0[i]; e += d*d; }
++					e = sqrt(e);
++					feLog("GFDCHK   s=%.0e |R(s)-(1-s)R0|=%.6e /s=%.6e /s^2=%.6e |R(s)|=%.6e\n", sc, e, e/sc, e/(sc*sc), sqrt(Rs*Rs));
++				}
++				// the line search below calls Update(m_ui), which rebuilds the state at u + du
++			}
++		}
++
+ 		// apply arc-length method
+ 		if (m_arcLength > 0) DoArcLength();
+ 
+@@ -1106,6 +1135,8 @@ bool FESolidSolver2::Quasin()
+ 
+ 		// print convergence summary
+ 		feLog(" Nonlinear solution status: time= %lg\n", tp.currentTime);
++		//feLog("\tR_min= %15le\n", m_Rmin);
++		//feLog("\tD_tol = %15le\n", m_Dtol);
+ 		feLog("\tstiffness updates             = %d\n", m_qnstrategy->m_nups);
+ 		feLog("\tright hand side evaluations   = %d\n", m_nrhs);
+ 		feLog("\tstiffness matrix reformations = %d\n", m_nref);

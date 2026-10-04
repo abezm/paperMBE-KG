@@ -1,0 +1,1309 @@
+===========================================================================
+         ________    _________   _______       __     _________            
+        |        |\ |        |\ |       \\    |  |\  /         \\          
+        |    ____|| |    ____|| |    __  ||   |__|| |    ___    ||         
+        |   |\___\| |   |\___\| |   |\_| ||    \_\| |   //  \   ||         
+        |   ||__    |   ||__    |   ||_| ||   |  |\ |  ||    |  ||         
+        |       |\  |       |\  |         \\  |  || |  ||    |  ||         
+        |    ___||  |    ___||  |    ___   || |  || |  ||    |  ||         
+        |   |\__\|  |   |\__\|  |   |\__|  || |  || |  ||    |  ||         
+        |   ||      |   ||___   |   ||__|  || |  || |   \\__/   ||         
+        |   ||      |        |\ |          || |  || |           ||         
+        |___||      |________|| |_________//  |__||  \_________//          
+                                                                           
+      F I N I T E   E L E M E N T S   F O R   B I O M E C H A N I C S      
+                                                                           
+  version 4.12.0
+  FEBio is a registered trademark.                                         
+  copyright (c) 2006-2026 - All rights reserved                            
+                                                                           
+===========================================================================
+
+
+
+
+
+ FILES USED
+===========================================================================
+	Input file : prof-sac-nu5-sz1p8.feb
+	Plot file  : prof-sac-nu5-sz1p8.xplt
+	Log file   : prof-sac-nu5-sz1p8.log
+
+
+ MESH INFO
+===========================================================================
+	Number of materials ............................ : 1
+	Number of domains .............................. : 1
+	Number of nodes ................................ : 4920
+	Number of solid elements ....................... : 400
+
+
+ MODULE
+===========================================================================
+	Module type ....................................... : solid
+
+
+ CONTROL DATA
+===========================================================================
+	analysis .......................................... : STATIC (0)
+	time_steps ........................................ : 11
+	step_size ......................................... : 1
+	plot_zero_state ................................... : no (0)
+	plot_range ........................................ : 0,-1
+	plot_level ........................................ : PLOT_MAJOR_ITRS (1)
+	output_level ...................................... : OUTPUT_MAJOR_ITRS (1)
+	plot_stride ....................................... : 1
+	output_stride ..................................... : 1
+	adaptor_re_solve .................................. : yes (1)
+	Auto time stepper activated ....................... : yes
+	  max_retries ..................................... : 1
+	  opt_iter ........................................ : 5
+	  dtmin ........................................... : 1
+	  dtmax ........................................... : 0
+	  aggressiveness .................................. : 0
+	  cutback ......................................... : 0.5
+	  dtforce ......................................... : no (0)
+ SOLVER PARAMETERS
+===========================================================================
+	symmetric_stiffness ............................... : non-symmetric (0)
+	equation_scheme ................................... : staggered (0)
+	equation_order .................................... : default (0)
+	optimize_bw ....................................... : no (0)
+	lstol ............................................. : 0
+	lsmin ............................................. : 0.01
+	lsiter ............................................ : 5
+	ls_check_jacobians ................................ : yes (1)
+	max_refs .......................................... : 15
+	check_zero_diagonal ............................... : no (0)
+	zero_diagonal_tol ................................. : 0
+	force_partition ................................... : 0
+	reform_each_time_step ............................. : yes (1)
+	reform_augment .................................... : no (0)
+	diverge_reform .................................... : yes (1)
+	min_residual ...................................... : 1e-20
+	max_residual ...................................... : 0
+	dtol .............................................. : 0.001
+	etol .............................................. : 0.01
+	rtol .............................................. : 0
+	rhoi .............................................. : -2
+	alpha ............................................. : 1
+	beta .............................................. : 0.25
+	gamma ............................................. : 0.5
+	logSolve .......................................... : no (0)
+	arc_length ........................................ : 0
+	arc_length_scale .................................. : 0
+
+
+
+
+
+
+ MATERIAL DATA
+===========================================================================
+  1 - Material1 (type: KinematicGrowth)
+	density ........................................... : 1
+	c_e ............................................... : 89.71
+	c_m ............................................... : 261.4
+	d_m ............................................... : 0.24
+	c_c ............................................... : 234.9
+	d_c ............................................... : 4.08
+	alpha ............................................. : 29.91
+	f_e ............................................... : 0.34
+	f_c ............................................... : 0.33
+	beta_z ............................................ : 0.067
+	beta_t ............................................ : 0.056
+	k_parameter ....................................... : 0.1
+	gr_start .......................................... : 1
+	gr_end ............................................ : 11
+	MBE ............................................... : yes (1)
+	asymm_aneurysm .................................... : yes (1)
+	lo_opt ............................................ : yes (1)
+	pr_opt ............................................ : no (0)
+	k_J ............................................... : 1e+06
+	Ge_t .............................................. : 1.9
+	Ge_z .............................................. : 1.62
+	Gm ................................................ : 1.2
+	Gc ................................................ : 1.25
+	mu_out ............................................ : 1
+	mu_in ............................................. : 0.63
+	cc_out ............................................ : 1
+	cc_in ............................................. : 0.63
+	hyperels_mod ...................................... : 3
+	ec_degrad ......................................... : yes (1)
+	alp_update ........................................ : yes (1)
+	secant_tangent .................................... : no (0)
+	z_center .......................................... : 7.5
+	z_spread .......................................... : 1.8
+	z_nu .............................................. : 5
+	t_nu .............................................. : 5
+	t_pif ............................................. : 3
+	elastic: (type: neo-Hookean)
+	  density ......................................... : 1
+	  E ............................................... : 200
+	  v ............................................... : 0
+
+
+ BOUNDARY CONDITION DATA
+===========================================================================
+  1 -  Type: zero displacement
+	x_dof ............................................. : yes (1)
+	y_dof ............................................. : no (0)
+	z_dof ............................................. : no (0)
+---------------------------------------------------------------------------
+  2 -  Type: zero displacement
+	x_dof ............................................. : no (0)
+	y_dof ............................................. : yes (1)
+	z_dof ............................................. : no (0)
+---------------------------------------------------------------------------
+  3 -  Type: zero displacement
+	x_dof ............................................. : no (0)
+	y_dof ............................................. : no (0)
+	z_dof ............................................. : yes (1)
+
+
+ MODEL LOAD DATA
+===========================================================================
+  1 -  Type: pressure
+	pressure .......................................... : 13.9868
+	symmetric_stiffness ............................... : no (0)
+	linear ............................................ : no (0)
+	shell_bottom ...................................... : no (0)
+
+
+ LOAD CONTROLLER DATA
+===========================================================================
+load controller   1 - lc1 (type: loadcurve)
+	interpolate ....................................... : LINEAR (0)
+	extend ............................................ : CONSTANT (0)
+	points ............................................ : (can't display value)
+---------------------------------------------------------------------------
+load controller   2 - lc2 (type: loadcurve)
+	interpolate ....................................... : STEP (1)
+	extend ............................................ : CONSTANT (0)
+	points ............................................ : (can't display value)
+
+
+ OUTPUT DATA
+===========================================================================
+ LINEAR SOLVER DATA
+===========================================================================
+	Default linear solver ............................. : pardiso
+
+
+Data Record #1
+===========================================================================
+Step = 0
+Time = 0
+Data = elem90_dat
+File = prof-sac-nu5-sz1p8-eA.txt
+
+Data Record #2
+===========================================================================
+Step = 0
+Time = 0
+Data = elem1_dat
+File = prof-sac-nu5-sz1p8-eB.txt
+
+Data Record #3
+===========================================================================
+Step = 0
+Time = 0
+Data = node1209_dat
+File = prof-sac-nu5-sz1p8-nA.txt
+
+Data Record #4
+===========================================================================
+Step = 0
+Time = 0
+Data = node1_dat
+File = prof-sac-nu5-sz1p8-nB.txt
+
+Data Record #5
+===========================================================================
+Step = 0
+Time = 0
+Data = all_dat
+File = prof-sac-nu5-sz1p8-ALL.txt
+
+Data Record #6
+===========================================================================
+Step = 0
+Time = 0
+Data = allnode
+File = prof-sac-nu5-sz1p8-NODES.txt
+
+ *************************************************************************
+ * Selecting linear solver pardiso                                       *
+ *************************************************************************
+MUST POINT CONTROLLER: adjusting time step. dt = 1
+
+
+===== beginning time step 1 : 1 =====
+
+
+Reforming stiffness matrix: reformation #1
+
+===== reforming stiffness matrix:
+	Nr of equations ........................... : 14512
+	Nr of nonzeroes in stiffness matrix ....... : 2035688
+ 1
+ Nonlinear solution status: time= 1
+	stiffness updates             = 0
+	right hand side evaluations   = 2
+	stiffness matrix reformations = 1
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            5.054078e+04    6.130552e-03    0.000000e+00 
+	   energy              2.048709e-02    1.131421e-05    2.048709e-04 
+	   displacement        1.260134e-05    1.260134e-05    1.260134e-11 
+Reforming stiffness matrix: reformation #2
+
+ 2
+ Nonlinear solution status: time= 1
+	stiffness updates             = 0
+	right hand side evaluations   = 3
+	stiffness matrix reformations = 2
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            5.054078e+04    1.598866e-06    0.000000e+00 
+	   energy              2.048709e-02    2.725080e-10    2.048709e-04 
+	   displacement        1.260134e-05    1.104165e-06    2.116262e-11 
+Reforming stiffness matrix: reformation #3
+
+ 3
+ Nonlinear solution status: time= 1
+	stiffness updates             = 0
+	right hand side evaluations   = 4
+	stiffness matrix reformations = 3
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            5.054078e+04    2.363845e-16    0.000000e+00 
+	   energy              2.048709e-02    1.715573e-19    2.048709e-04 
+	   displacement        1.260134e-05    4.205631e-14    2.116451e-11 
+
+convergence summary
+    number of iterations   : 3
+    number of reformations : 3
+
+------- converged at time : 1
+
+
+Data Record #1
+===========================================================================
+Step = 1
+Time = 1
+Data = elem90_dat
+File = prof-sac-nu5-sz1p8-eA.txt
+
+Data Record #2
+===========================================================================
+Step = 1
+Time = 1
+Data = elem1_dat
+File = prof-sac-nu5-sz1p8-eB.txt
+
+Data Record #3
+===========================================================================
+Step = 1
+Time = 1
+Data = node1209_dat
+File = prof-sac-nu5-sz1p8-nA.txt
+
+Data Record #4
+===========================================================================
+Step = 1
+Time = 1
+Data = node1_dat
+File = prof-sac-nu5-sz1p8-nB.txt
+
+Data Record #5
+===========================================================================
+Step = 1
+Time = 1
+Data = all_dat
+File = prof-sac-nu5-sz1p8-ALL.txt
+
+Data Record #6
+===========================================================================
+Step = 1
+Time = 1
+Data = allnode
+File = prof-sac-nu5-sz1p8-NODES.txt
+
+===== beginning time step 2 : 2 =====
+
+
+Reforming stiffness matrix: reformation #1
+
+ 1
+ Nonlinear solution status: time= 2
+	stiffness updates             = 0
+	right hand side evaluations   = 2
+	stiffness matrix reformations = 1
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            7.136995e+00    5.614286e-02    0.000000e+00 
+	   energy              3.179715e-02    1.234488e-03    3.179715e-04 
+	   displacement        2.178251e+00    2.178251e+00    2.178251e-06 
+Reforming stiffness matrix: reformation #2
+
+ 2
+ Nonlinear solution status: time= 2
+	stiffness updates             = 0
+	right hand side evaluations   = 3
+	stiffness matrix reformations = 2
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            7.136995e+00    3.607707e-06    0.000000e+00 
+	   energy              3.179715e-02    1.032756e-06    3.179715e-04 
+	   displacement        2.178251e+00    2.486675e-03    2.041301e-06 
+Reforming stiffness matrix: reformation #3
+
+ 3
+ Nonlinear solution status: time= 2
+	stiffness updates             = 0
+	right hand side evaluations   = 4
+	stiffness matrix reformations = 3
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            7.136995e+00    4.166864e-14    0.000000e+00 
+	   energy              3.179715e-02    7.505063e-13    3.179715e-04 
+	   displacement        2.178251e+00    2.562016e-07    2.040094e-06 
+
+convergence summary
+    number of iterations   : 3
+    number of reformations : 3
+
+------- converged at time : 2
+
+
+Data Record #1
+===========================================================================
+Step = 2
+Time = 2
+Data = elem90_dat
+File = prof-sac-nu5-sz1p8-eA.txt
+
+Data Record #2
+===========================================================================
+Step = 2
+Time = 2
+Data = elem1_dat
+File = prof-sac-nu5-sz1p8-eB.txt
+
+Data Record #3
+===========================================================================
+Step = 2
+Time = 2
+Data = node1209_dat
+File = prof-sac-nu5-sz1p8-nA.txt
+
+Data Record #4
+===========================================================================
+Step = 2
+Time = 2
+Data = node1_dat
+File = prof-sac-nu5-sz1p8-nB.txt
+
+Data Record #5
+===========================================================================
+Step = 2
+Time = 2
+Data = all_dat
+File = prof-sac-nu5-sz1p8-ALL.txt
+
+Data Record #6
+===========================================================================
+Step = 2
+Time = 2
+Data = allnode
+File = prof-sac-nu5-sz1p8-NODES.txt
+
+===== beginning time step 3 : 3 =====
+
+
+Reforming stiffness matrix: reformation #1
+
+ 1
+ Nonlinear solution status: time= 3
+	stiffness updates             = 0
+	right hand side evaluations   = 2
+	stiffness matrix reformations = 1
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            8.358744e+00    7.338151e-02    0.000000e+00 
+	   energy              3.482626e-02    1.690879e-03    3.482626e-04 
+	   displacement        2.571573e+00    2.571573e+00    2.571573e-06 
+Reforming stiffness matrix: reformation #2
+
+ 2
+ Nonlinear solution status: time= 3
+	stiffness updates             = 0
+	right hand side evaluations   = 3
+	stiffness matrix reformations = 2
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            8.358744e+00    6.410371e-06    0.000000e+00 
+	   energy              3.482626e-02    1.508391e-06    3.482626e-04 
+	   displacement        2.571573e+00    3.088621e-03    2.405710e-06 
+Reforming stiffness matrix: reformation #3
+
+ 3
+ Nonlinear solution status: time= 3
+	stiffness updates             = 0
+	right hand side evaluations   = 4
+	stiffness matrix reformations = 3
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            8.358744e+00    1.328023e-13    0.000000e+00 
+	   energy              3.482626e-02    1.729626e-12    3.482626e-04 
+	   displacement        2.571573e+00    4.653799e-07    2.403987e-06 
+
+convergence summary
+    number of iterations   : 3
+    number of reformations : 3
+
+------- converged at time : 3
+
+
+Data Record #1
+===========================================================================
+Step = 3
+Time = 3
+Data = elem90_dat
+File = prof-sac-nu5-sz1p8-eA.txt
+
+Data Record #2
+===========================================================================
+Step = 3
+Time = 3
+Data = elem1_dat
+File = prof-sac-nu5-sz1p8-eB.txt
+
+Data Record #3
+===========================================================================
+Step = 3
+Time = 3
+Data = node1209_dat
+File = prof-sac-nu5-sz1p8-nA.txt
+
+Data Record #4
+===========================================================================
+Step = 3
+Time = 3
+Data = node1_dat
+File = prof-sac-nu5-sz1p8-nB.txt
+
+Data Record #5
+===========================================================================
+Step = 3
+Time = 3
+Data = all_dat
+File = prof-sac-nu5-sz1p8-ALL.txt
+
+Data Record #6
+===========================================================================
+Step = 3
+Time = 3
+Data = allnode
+File = prof-sac-nu5-sz1p8-NODES.txt
+
+===== beginning time step 4 : 4 =====
+
+
+Reforming stiffness matrix: reformation #1
+
+ 1
+ Nonlinear solution status: time= 4
+	stiffness updates             = 0
+	right hand side evaluations   = 2
+	stiffness matrix reformations = 1
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            9.927190e+00    9.924874e-02    0.000000e+00 
+	   energy              3.858857e-02    2.369563e-03    3.858857e-04 
+	   displacement        3.083596e+00    3.083596e+00    3.083596e-06 
+Reforming stiffness matrix: reformation #2
+
+ 2
+ Nonlinear solution status: time= 4
+	stiffness updates             = 0
+	right hand side evaluations   = 3
+	stiffness matrix reformations = 2
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            9.927190e+00    1.241292e-05    0.000000e+00 
+	   energy              3.858857e-02    2.357372e-06    3.858857e-04 
+	   displacement        3.083596e+00    3.943975e-03    2.878396e-06 
+Reforming stiffness matrix: reformation #3
+
+ 3
+ Nonlinear solution status: time= 4
+	stiffness updates             = 0
+	right hand side evaluations   = 4
+	stiffness matrix reformations = 3
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            9.927190e+00    4.934704e-13    0.000000e+00 
+	   energy              3.858857e-02    4.546052e-12    3.858857e-04 
+	   displacement        3.083596e+00    9.172562e-07    2.875807e-06 
+
+convergence summary
+    number of iterations   : 3
+    number of reformations : 3
+
+------- converged at time : 4
+
+
+Data Record #1
+===========================================================================
+Step = 4
+Time = 4
+Data = elem90_dat
+File = prof-sac-nu5-sz1p8-eA.txt
+
+Data Record #2
+===========================================================================
+Step = 4
+Time = 4
+Data = elem1_dat
+File = prof-sac-nu5-sz1p8-eB.txt
+
+Data Record #3
+===========================================================================
+Step = 4
+Time = 4
+Data = node1209_dat
+File = prof-sac-nu5-sz1p8-nA.txt
+
+Data Record #4
+===========================================================================
+Step = 4
+Time = 4
+Data = node1_dat
+File = prof-sac-nu5-sz1p8-nB.txt
+
+Data Record #5
+===========================================================================
+Step = 4
+Time = 4
+Data = all_dat
+File = prof-sac-nu5-sz1p8-ALL.txt
+
+Data Record #6
+===========================================================================
+Step = 4
+Time = 4
+Data = allnode
+File = prof-sac-nu5-sz1p8-NODES.txt
+
+===== beginning time step 5 : 5 =====
+
+
+Reforming stiffness matrix: reformation #1
+
+ 1
+ Nonlinear solution status: time= 5
+	stiffness updates             = 0
+	right hand side evaluations   = 2
+	stiffness matrix reformations = 1
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            1.191529e+01    1.385492e-01    0.000000e+00 
+	   energy              4.310930e-02    3.382585e-03    4.310930e-04 
+	   displacement        3.761335e+00    3.761335e+00    3.761335e-06 
+Reforming stiffness matrix: reformation #2
+
+ 2
+ Nonlinear solution status: time= 5
+	stiffness updates             = 0
+	right hand side evaluations   = 3
+	stiffness matrix reformations = 2
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            1.191529e+01    2.615013e-05    0.000000e+00 
+	   energy              4.310930e-02    3.948350e-06    4.310930e-04 
+	   displacement        3.761335e+00    5.149552e-03    3.502383e-06 
+Reforming stiffness matrix: reformation #3
+
+ 3
+ Nonlinear solution status: time= 5
+	stiffness updates             = 0
+	right hand side evaluations   = 4
+	stiffness matrix reformations = 3
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            1.191529e+01    2.130173e-12    0.000000e+00 
+	   energy              4.310930e-02    1.361569e-11    4.310930e-04 
+	   displacement        3.761335e+00    1.952498e-06    3.498297e-06 
+
+convergence summary
+    number of iterations   : 3
+    number of reformations : 3
+
+------- converged at time : 5
+
+
+Data Record #1
+===========================================================================
+Step = 5
+Time = 5
+Data = elem90_dat
+File = prof-sac-nu5-sz1p8-eA.txt
+
+Data Record #2
+===========================================================================
+Step = 5
+Time = 5
+Data = elem1_dat
+File = prof-sac-nu5-sz1p8-eB.txt
+
+Data Record #3
+===========================================================================
+Step = 5
+Time = 5
+Data = node1209_dat
+File = prof-sac-nu5-sz1p8-nA.txt
+
+Data Record #4
+===========================================================================
+Step = 5
+Time = 5
+Data = node1_dat
+File = prof-sac-nu5-sz1p8-nB.txt
+
+Data Record #5
+===========================================================================
+Step = 5
+Time = 5
+Data = all_dat
+File = prof-sac-nu5-sz1p8-ALL.txt
+
+Data Record #6
+===========================================================================
+Step = 5
+Time = 5
+Data = allnode
+File = prof-sac-nu5-sz1p8-NODES.txt
+
+===== beginning time step 6 : 6 =====
+
+
+Reforming stiffness matrix: reformation #1
+
+ 1
+ Nonlinear solution status: time= 6
+	stiffness updates             = 0
+	right hand side evaluations   = 2
+	stiffness matrix reformations = 1
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            1.447831e+01    2.018766e-01    0.000000e+00 
+	   energy              4.864081e-02    4.963382e-03    4.864081e-04 
+	   displacement        4.684726e+00    4.684726e+00    4.684726e-06 
+Reforming stiffness matrix: reformation #2
+
+ 2
+ Nonlinear solution status: time= 6
+	stiffness updates             = 0
+	right hand side evaluations   = 3
+	stiffness matrix reformations = 2
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            1.447831e+01    6.108416e-05    0.000000e+00 
+	   energy              4.864081e-02    7.209104e-06    4.864081e-04 
+	   displacement        4.684726e+00    6.921374e-03    4.349633e-06 
+Reforming stiffness matrix: reformation #3
+
+ 3
+ Nonlinear solution status: time= 6
+	stiffness updates             = 0
+	right hand side evaluations   = 4
+	stiffness matrix reformations = 3
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            1.447831e+01    1.113793e-11    0.000000e+00 
+	   energy              4.864081e-02    4.783574e-11    4.864081e-04 
+	   displacement        4.684726e+00    4.570223e-06    4.342775e-06 
+Reforming stiffness matrix: reformation #4
+
+ 4
+ Nonlinear solution status: time= 6
+	stiffness updates             = 0
+	right hand side evaluations   = 5
+	stiffness matrix reformations = 4
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            1.447831e+01    1.336350e-23    0.000000e+00 
+	   energy              4.864081e-02    1.059726e-20    4.864081e-04 
+	   displacement        4.684726e+00    9.015865e-14    4.342774e-06 
+
+convergence summary
+    number of iterations   : 4
+    number of reformations : 4
+
+------- converged at time : 6
+
+
+Data Record #1
+===========================================================================
+Step = 6
+Time = 6
+Data = elem90_dat
+File = prof-sac-nu5-sz1p8-eA.txt
+
+Data Record #2
+===========================================================================
+Step = 6
+Time = 6
+Data = elem1_dat
+File = prof-sac-nu5-sz1p8-eB.txt
+
+Data Record #3
+===========================================================================
+Step = 6
+Time = 6
+Data = node1209_dat
+File = prof-sac-nu5-sz1p8-nA.txt
+
+Data Record #4
+===========================================================================
+Step = 6
+Time = 6
+Data = node1_dat
+File = prof-sac-nu5-sz1p8-nB.txt
+
+Data Record #5
+===========================================================================
+Step = 6
+Time = 6
+Data = all_dat
+File = prof-sac-nu5-sz1p8-ALL.txt
+
+Data Record #6
+===========================================================================
+Step = 6
+Time = 6
+Data = allnode
+File = prof-sac-nu5-sz1p8-NODES.txt
+
+===== beginning time step 7 : 7 =====
+
+
+Reforming stiffness matrix: reformation #1
+
+ 1
+ Nonlinear solution status: time= 7
+	stiffness updates             = 0
+	right hand side evaluations   = 2
+	stiffness matrix reformations = 1
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            1.785009e+01    3.121688e-01    0.000000e+00 
+	   energy              5.555953e-02    7.574756e-03    5.555953e-04 
+	   displacement        5.987743e+00    5.987743e+00    5.987743e-06 
+Reforming stiffness matrix: reformation #2
+
+ 2
+ Nonlinear solution status: time= 7
+	stiffness updates             = 0
+	right hand side evaluations   = 3
+	stiffness matrix reformations = 2
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            1.785009e+01    1.618168e-04    0.000000e+00 
+	   energy              5.555953e-02    1.465652e-05    5.555953e-04 
+	   displacement        5.987743e+00    9.664093e-03    5.539963e-06 
+Reforming stiffness matrix: reformation #3
+
+ 3
+ Nonlinear solution status: time= 7
+	stiffness updates             = 0
+	right hand side evaluations   = 4
+	stiffness matrix reformations = 3
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            1.785009e+01    7.466580e-11    0.000000e+00 
+	   energy              5.555953e-02    2.034401e-10    5.555953e-04 
+	   displacement        5.987743e+00    1.206110e-05    5.527516e-06 
+Reforming stiffness matrix: reformation #4
+
+ 4
+ Nonlinear solution status: time= 7
+	stiffness updates             = 0
+	right hand side evaluations   = 5
+	stiffness matrix reformations = 4
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            1.785009e+01    3.235333e-23    0.000000e+00 
+	   energy              5.555953e-02    1.193485e-19    5.555953e-04 
+	   displacement        5.987743e+00    5.979451e-13    5.527513e-06 
+
+convergence summary
+    number of iterations   : 4
+    number of reformations : 4
+
+------- converged at time : 7
+
+
+Data Record #1
+===========================================================================
+Step = 7
+Time = 7
+Data = elem90_dat
+File = prof-sac-nu5-sz1p8-eA.txt
+
+Data Record #2
+===========================================================================
+Step = 7
+Time = 7
+Data = elem1_dat
+File = prof-sac-nu5-sz1p8-eB.txt
+
+Data Record #3
+===========================================================================
+Step = 7
+Time = 7
+Data = node1209_dat
+File = prof-sac-nu5-sz1p8-nA.txt
+
+Data Record #4
+===========================================================================
+Step = 7
+Time = 7
+Data = node1_dat
+File = prof-sac-nu5-sz1p8-nB.txt
+
+Data Record #5
+===========================================================================
+Step = 7
+Time = 7
+Data = all_dat
+File = prof-sac-nu5-sz1p8-ALL.txt
+
+Data Record #6
+===========================================================================
+Step = 7
+Time = 7
+Data = allnode
+File = prof-sac-nu5-sz1p8-NODES.txt
+
+===== beginning time step 8 : 8 =====
+
+
+Reforming stiffness matrix: reformation #1
+
+ 1
+ Nonlinear solution status: time= 8
+	stiffness updates             = 0
+	right hand side evaluations   = 2
+	stiffness matrix reformations = 1
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            2.239684e+01    5.254081e-01    0.000000e+00 
+	   energy              6.445244e-02    1.221643e-02    6.445244e-04 
+	   displacement        7.908230e+00    7.908230e+00    7.908230e-06 
+Reforming stiffness matrix: reformation #2
+
+ 2
+ Nonlinear solution status: time= 8
+	stiffness updates             = 0
+	right hand side evaluations   = 3
+	stiffness matrix reformations = 2
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            2.239684e+01    4.991125e-04    0.000000e+00 
+	   energy              6.445244e-02    3.405044e-05    6.445244e-04 
+	   displacement        7.908230e+00    1.419022e-02    7.284536e-06 
+Reforming stiffness matrix: reformation #3
+
+ 3
+ Nonlinear solution status: time= 8
+	stiffness updates             = 0
+	right hand side evaluations   = 4
+	stiffness matrix reformations = 3
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            2.239684e+01    6.916039e-10    0.000000e+00 
+	   energy              6.445244e-02    1.081122e-09    6.445244e-04 
+	   displacement        7.908230e+00    3.718119e-05    7.259561e-06 
+Reforming stiffness matrix: reformation #4
+
+ 4
+ Nonlinear solution status: time= 8
+	stiffness updates             = 0
+	right hand side evaluations   = 5
+	stiffness matrix reformations = 4
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            2.239684e+01    1.707218e-21    0.000000e+00 
+	   energy              6.445244e-02    3.358011e-18    6.445244e-04 
+	   displacement        7.908230e+00    5.460432e-12    7.259550e-06 
+
+convergence summary
+    number of iterations   : 4
+    number of reformations : 4
+
+------- converged at time : 8
+
+
+Data Record #1
+===========================================================================
+Step = 8
+Time = 8
+Data = elem90_dat
+File = prof-sac-nu5-sz1p8-eA.txt
+
+Data Record #2
+===========================================================================
+Step = 8
+Time = 8
+Data = elem1_dat
+File = prof-sac-nu5-sz1p8-eB.txt
+
+Data Record #3
+===========================================================================
+Step = 8
+Time = 8
+Data = node1209_dat
+File = prof-sac-nu5-sz1p8-nA.txt
+
+Data Record #4
+===========================================================================
+Step = 8
+Time = 8
+Data = node1_dat
+File = prof-sac-nu5-sz1p8-nB.txt
+
+Data Record #5
+===========================================================================
+Step = 8
+Time = 8
+Data = all_dat
+File = prof-sac-nu5-sz1p8-ALL.txt
+
+Data Record #6
+===========================================================================
+Step = 8
+Time = 8
+Data = allnode
+File = prof-sac-nu5-sz1p8-NODES.txt
+
+===== beginning time step 9 : 9 =====
+
+
+Reforming stiffness matrix: reformation #1
+
+ 1
+ Nonlinear solution status: time= 9
+	stiffness updates             = 0
+	right hand side evaluations   = 2
+	stiffness matrix reformations = 1
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            2.872036e+01    1.001066e+00    0.000000e+00 
+	   energy              7.628756e-02    2.128744e-02    7.628756e-04 
+	   displacement        1.089999e+01    1.089999e+01    1.089999e-05 
+Reforming stiffness matrix: reformation #2
+
+ 2
+ Nonlinear solution status: time= 9
+	stiffness updates             = 0
+	right hand side evaluations   = 3
+	stiffness matrix reformations = 2
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            2.872036e+01    1.846345e-03    0.000000e+00 
+	   energy              7.628756e-02    9.320841e-05    7.628756e-04 
+	   displacement        1.089999e+01    2.225315e-02    9.983528e-06 
+Reforming stiffness matrix: reformation #3
+
+ 3
+ Nonlinear solution status: time= 9
+	stiffness updates             = 0
+	right hand side evaluations   = 4
+	stiffness matrix reformations = 3
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            2.872036e+01    9.718633e-09    0.000000e+00 
+	   energy              7.628756e-02    7.362262e-09    7.628756e-04 
+	   displacement        1.089999e+01    1.408913e-04    9.926378e-06 
+Reforming stiffness matrix: reformation #4
+
+ 4
+ Nonlinear solution status: time= 9
+	stiffness updates             = 0
+	right hand side evaluations   = 5
+	stiffness matrix reformations = 4
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            2.872036e+01    3.756264e-19    0.000000e+00 
+	   energy              7.628756e-02    1.792592e-16    7.628756e-04 
+	   displacement        1.089999e+01    7.332495e-11    9.926330e-06 
+
+convergence summary
+    number of iterations   : 4
+    number of reformations : 4
+
+------- converged at time : 9
+
+
+Data Record #1
+===========================================================================
+Step = 9
+Time = 9
+Data = elem90_dat
+File = prof-sac-nu5-sz1p8-eA.txt
+
+Data Record #2
+===========================================================================
+Step = 9
+Time = 9
+Data = elem1_dat
+File = prof-sac-nu5-sz1p8-eB.txt
+
+Data Record #3
+===========================================================================
+Step = 9
+Time = 9
+Data = node1209_dat
+File = prof-sac-nu5-sz1p8-nA.txt
+
+Data Record #4
+===========================================================================
+Step = 9
+Time = 9
+Data = node1_dat
+File = prof-sac-nu5-sz1p8-nB.txt
+
+Data Record #5
+===========================================================================
+Step = 9
+Time = 9
+Data = all_dat
+File = prof-sac-nu5-sz1p8-ALL.txt
+
+Data Record #6
+===========================================================================
+Step = 9
+Time = 9
+Data = allnode
+File = prof-sac-nu5-sz1p8-NODES.txt
+
+===== beginning time step 10 : 10 =====
+
+
+Reforming stiffness matrix: reformation #1
+
+ 1
+ Nonlinear solution status: time= 10
+	stiffness updates             = 0
+	right hand side evaluations   = 2
+	stiffness matrix reformations = 1
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            3.787106e+01    2.296031e+00    0.000000e+00 
+	   energy              9.278180e-02    4.134778e-02    9.278180e-04 
+	   displacement        1.591310e+01    1.591310e+01    1.591310e-05 
+Reforming stiffness matrix: reformation #2
+
+ 2
+ Nonlinear solution status: time= 10
+	stiffness updates             = 0
+	right hand side evaluations   = 3
+	stiffness matrix reformations = 2
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            3.787106e+01    8.428627e-03    0.000000e+00 
+	   energy              9.278180e-02    3.107003e-04    9.278180e-04 
+	   displacement        1.591310e+01    3.782816e-02    1.447329e-05 
+Reforming stiffness matrix: reformation #3
+
+ 3
+ Nonlinear solution status: time= 10
+	stiffness updates             = 0
+	right hand side evaluations   = 4
+	stiffness matrix reformations = 3
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            3.787106e+01    2.299239e-07    0.000000e+00 
+	   energy              9.278180e-02    6.271851e-08    9.278180e-04 
+	   displacement        1.591310e+01    7.070528e-04    1.431723e-05 
+Reforming stiffness matrix: reformation #4
+
+ 4
+ Nonlinear solution status: time= 10
+	stiffness updates             = 0
+	right hand side evaluations   = 5
+	stiffness matrix reformations = 4
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            3.787106e+01    2.217165e-16    0.000000e+00 
+	   energy              9.278180e-02    1.966258e-14    9.278180e-04 
+	   displacement        1.591310e+01    1.547874e-09    1.431697e-05 
+
+convergence summary
+    number of iterations   : 4
+    number of reformations : 4
+
+------- converged at time : 10
+
+
+Data Record #1
+===========================================================================
+Step = 10
+Time = 10
+Data = elem90_dat
+File = prof-sac-nu5-sz1p8-eA.txt
+
+Data Record #2
+===========================================================================
+Step = 10
+Time = 10
+Data = elem1_dat
+File = prof-sac-nu5-sz1p8-eB.txt
+
+Data Record #3
+===========================================================================
+Step = 10
+Time = 10
+Data = node1209_dat
+File = prof-sac-nu5-sz1p8-nA.txt
+
+Data Record #4
+===========================================================================
+Step = 10
+Time = 10
+Data = node1_dat
+File = prof-sac-nu5-sz1p8-nB.txt
+
+Data Record #5
+===========================================================================
+Step = 10
+Time = 10
+Data = all_dat
+File = prof-sac-nu5-sz1p8-ALL.txt
+
+Data Record #6
+===========================================================================
+Step = 10
+Time = 10
+Data = allnode
+File = prof-sac-nu5-sz1p8-NODES.txt
+MUST POINT CONTROLLER: adjusting time step. dt = 1
+
+
+===== beginning time step 11 : 11 =====
+
+
+Reforming stiffness matrix: reformation #1
+
+ 1
+ Nonlinear solution status: time= 11
+	stiffness updates             = 0
+	right hand side evaluations   = 2
+	stiffness matrix reformations = 1
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            5.183120e+01    6.977249e+00    0.000000e+00 
+	   energy              1.172935e-01    9.354476e-02    1.172935e-03 
+	   displacement        2.520025e+01    2.520025e+01    2.520025e-05 
+Reforming stiffness matrix: reformation #2
+
+ 2
+ Nonlinear solution status: time= 11
+	stiffness updates             = 0
+	right hand side evaluations   = 3
+	stiffness matrix reformations = 2
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            5.183120e+01    4.778188e-02    0.000000e+00 
+	   energy              1.172935e-01    1.287213e-03    1.172935e-03 
+	   displacement        2.520025e+01    6.904616e-02    2.277505e-05 
+Reforming stiffness matrix: reformation #3
+
+ 3
+ Nonlinear solution status: time= 11
+	stiffness updates             = 0
+	right hand side evaluations   = 4
+	stiffness matrix reformations = 3
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            5.183120e+01    9.689050e-06    0.000000e+00 
+	   energy              1.172935e-01    3.888291e-07    1.172935e-03 
+	   displacement        2.520025e+01    5.276201e-03    2.222914e-05 
+Reforming stiffness matrix: reformation #4
+
+ 4
+ Nonlinear solution status: time= 11
+	stiffness updates             = 0
+	right hand side evaluations   = 5
+	stiffness matrix reformations = 4
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            5.183120e+01    3.698309e-13    0.000000e+00 
+	   energy              1.172935e-01    4.405015e-12    1.172935e-03 
+	   displacement        2.520025e+01    5.274508e-08    2.222726e-05 
+
+convergence summary
+    number of iterations   : 4
+    number of reformations : 4
+
+------- converged at time : 11
+
+
+Data Record #1
+===========================================================================
+Step = 11
+Time = 11
+Data = elem90_dat
+File = prof-sac-nu5-sz1p8-eA.txt
+
+Data Record #2
+===========================================================================
+Step = 11
+Time = 11
+Data = elem1_dat
+File = prof-sac-nu5-sz1p8-eB.txt
+
+Data Record #3
+===========================================================================
+Step = 11
+Time = 11
+Data = node1209_dat
+File = prof-sac-nu5-sz1p8-nA.txt
+
+Data Record #4
+===========================================================================
+Step = 11
+Time = 11
+Data = node1_dat
+File = prof-sac-nu5-sz1p8-nB.txt
+
+Data Record #5
+===========================================================================
+Step = 11
+Time = 11
+Data = all_dat
+File = prof-sac-nu5-sz1p8-ALL.txt
+
+Data Record #6
+===========================================================================
+Step = 11
+Time = 11
+Data = allnode
+File = prof-sac-nu5-sz1p8-NODES.txt
+
+
+ N O N L I N E A R   I T E R A T I O N   I N F O R M A T I O N
+
+	Number of time steps completed .................... : 11
+
+	Total number of equilibrium iterations ............ : 39
+
+	Average number of equilibrium iterations .......... : 3.54545
+
+	Total number of right hand evaluations ............ : 50
+
+	Total number of stiffness reformations ............ : 39
+
+
+ L I N E A R   S O L V E R   S T A T S
+
+	Total calls to linear solver ........ : 39
+
+	Avg iterations per solve ............ : 1
+
+	Time in linear solver: 0:00:25
+
+
+ Elapsed time : 0:00:49
+
+ T I M I N G   I N F O R M A T I O N
+
+	Input time ...................... : 0:00:00 (0.0555303 sec)
+
+	Initialization time ............. : 0:00:00 (0.0114165 sec)
+
+	Solve time ...................... : 0:00:49 (48.9411 sec)
+
+	   IO-time (plot, dmp, data) .... : 0:00:01 (0.845883 sec)
+
+	   reforming stiffness .......... : 0:00:00 (0.0552683 sec)
+
+	   evaluating stiffness ......... : 0:00:21 (20.9877 sec)
+
+	   evaluating residual .......... : 0:00:00 (0.412 sec)
+
+	   model update ................. : 0:00:01 (0.930823 sec)
+
+	   QN updates ................... : 0:00:00 (3.5384e-05 sec)
+
+	   time in linear solver ........ : 0:00:25 (25.4827 sec)
+
+	Total elapsed time .............. : 0:00:49 (49.038 sec)
+
+
+ N O R M A L   T E R M I N A T I O N
+

@@ -71,9 +71,15 @@ T_circ = np.array([0.0, 1.0, 0.0])                     # N1 (circumferential)
 T_diag = np.array([ca2, sa2, 0.0])                     # Np, Nn (diagonal, axial-circ plane)
 Ge2    = np.array([Gez**2, Get**2, 1.0/(Get*Gez)**2])  # Ge^2 (= I for unit stretches)
 
-def Se_diag(lx, ly, lz, Jinv13=1.0):
+def Se_diag(lx, ly, lz, Jinv13=1.0, alp=None):
     """Extra 2nd-PK stress (diagonal xyz).  Jinv13 = J^(-1/3): elastic stretch
-    lei = li * J^(-1/3) (Fe = J^(-1/3) F).  Passive -> Jinv13 = 1."""
+    lei = li * J^(-1/3) (Fe = J^(-1/3) F).  Passive -> Jinv13 = 1.
+    alp: angle of the diagonal families (rad); None keeps alpha_0."""
+    if alp is not None:
+        ca2, sa2 = np.cos(alp)**2, np.sin(alp)**2
+        T_diag = np.array([ca2, sa2, 0.0])
+    else:
+        ca2, sa2, T_diag = globals()["ca2"], globals()["sa2"], globals()["T_diag"]
     lex2, ley2, lez2 = (lx*Jinv13)**2, (ly*Jinv13)**2, (lz*Jinv13)**2
     # uniform basis, axes (pull, free, free) = (axial, circumferential, radial):
     # index 0 = axial, 1 = circumferential, 2 = radial. No fibre lies along r.
@@ -90,12 +96,33 @@ def Se_diag(lx, ly, lz, Jinv13=1.0):
     Se += phi_c*(Sh_ct*beta_t*T_circ + Sh_cz*beta_z*T_ax + 2.0*Sh_cp*beta_d*T_diag)
     return Se
 
+# Option lo_opt = 1 of FEKinematicGrowthZ.cpp (lines 259-262): during Stage II the code sets
+# Fe = Fo, so Se is evaluated with the stretches of the original homeostatic state instead of
+# the elastic stretches l_i J^(-1/3). LO = (lx_o, ly_o, lz_o) activates it; None keeps Box 2.
+LO = None
+
+# Option alp_update = 1 (Eq. 31), with the stretches measured from the original homeostatic state
+# (F Fo^-1, as in the code of the cited authors and in ~/FEBio-alpcheck): during Stage II
+# tan(alpha) = tan(alpha_0) (lt/lt_o)/(lz/lz_o), lt = ly (circumferential), lz = lx (axial).
+# ALP = True activates it (requires LO); False keeps alpha_0.
+ALP = False
+
+def Se_grown(lx, ly, lz, J):
+    """Se in the grown state (Stage II): at the elastic stretches (LO is None) or at the
+    stretches of the original homeostatic state (LO given)."""
+    if LO is None:
+        return Se_diag(lx, ly, lz, J**(-1.0/3.0))
+    alp = np.arctan(np.tan(alpha)*(ly/LO[1])/(lx/LO[0])) if ALP else None
+    return Se_diag(LO[0], LO[1], LO[2], 1.0, alp)
+
 # ------------------------------------------------------------------- passive
 def passive_stress(lx, ly, lz):
     J = lx*ly*lz
     Se = Se_diag(lx, ly, lz, 1.0)
     pen = kJ*np.log(Jdep*J)
-    return (np.array([lx, ly, lz])**2 * Se + pen)/J   # sigma_xx, yy, zz
+    # Stage I as Section 5.1 of the paper and ~/FEBio-stage1 (3 Oct 2026): F_g = 1, F_e = F,
+    # S = J S_e(C) + k_J ln(J_dep J) C^-1, so sigma = lam^2 S_e + k_J ln(J_dep J)/J
+    return (np.array([lx, ly, lz])**2 * J * Se + pen)/J   # sigma_xx, yy, zz
 
 def passive_solve(lx, guess=None):
     g = guess if guess is not None else [lx**-0.5, lx**-0.5]
@@ -118,7 +145,7 @@ def mbe_solve(lx, svo, guess=None):
     def resid(v):
         ly, lz = v
         J = lx*ly*lz; Ji13 = J**(1.0/3.0)
-        Se = Se_diag(lx, ly, lz, J**(-1.0/3.0))
+        Se = Se_grown(lx, ly, lz, J)
         li2 = np.array([lx, ly, lz])**2
         # sigma_yy = sigma_zz = 0  <=>  ly^2 Se_yy = lz^2 Se_zz  (eq1)
         # p = sigma_v^x - svo, with p = (1/J) ly^2 Ji13 Se_yy    (eq2)
@@ -130,7 +157,7 @@ def mbe_solve(lx, svo, guess=None):
     g = guess if guess is not None else [lx**-0.4, lx**-0.4]
     ly, lz = fsolve(resid, g)
     J = lx*ly*lz; Ji13 = J**(1.0/3.0)
-    Se = Se_diag(lx, ly, lz, J**(-1.0/3.0))
+    Se = Se_grown(lx, ly, lz, J)
     li2 = np.array([lx, ly, lz])**2
     p = (Ji13/J)*li2[1]*Se[1]
     sxx = (Ji13/J)*li2[0]*Se[0] - p
@@ -150,7 +177,7 @@ def _sig_grown(lx, ly, lz, svo, Jn=None, ds=None):
     """Total Cauchy stress (diagonal) in the grown state. Jn/ds given -> full KG
     (rate-dependent p); Jn=None -> MBE (equilibrated p = sigma_v^x - sigma_vo)."""
     J = lx*ly*lz
-    Se = Se_diag(lx, ly, lz, J**(-1.0/3.0))
+    Se = Se_grown(lx, ly, lz, J)
     li2 = np.array([lx, ly, lz])**2
     sx = (J**(1.0/3.0)/J) * li2 * Se            # extra Cauchy stress sigma^x
     svx = sx.sum()/3.0
@@ -219,10 +246,20 @@ def march(fb, solver, svo=None, lx_o=None):
     return out
 
 if __name__ == "__main__":
-    import os
+    import os, sys
+    lo1 = "--lo1" in sys.argv        # fibre stress at the original homeostatic state (lo_opt = 1)
+    ALP = "--alp" in sys.argv        # angle of the diagonal families updated (alp_update = 1)
     base = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                         "..", "aneurysm-knockout", "uniax-fractions"))
+                                         "..", "aneurysm-knockout",
+                                         "uniax-lo1" if lo1 else "uniax-fractions"))
+    if "--out" in sys.argv:          # folder of <case>_c.txt and of the written <case>_a.txt
+        base = os.path.abspath(sys.argv[sys.argv.index("--out") + 1])
+    assert not ALP or lo1, "--alp requires --lo1"
     lx_o, svo, st_o = homeostatic_svo()
+    if lo1:
+        LO = (lx_o, st_o['ly'], st_o['lz'])
+        print(f"lo_opt = 1: Se evaluated at lam_o = ({LO[0]:.6f}, {LO[1]:.6f}, {LO[2]:.6f})")
+    print(f"alp_update = {int(ALP)}; output folder {base}")
     print(f"Homeostatic (F_o={F_o_total:.2f} mN): lam_x={lx_o:.4f}  "
           f"sigma_xx={st_o['sxx']:.2f}  J={st_o['J']:.5f}  sigma_vo={svo:.2f} kPa")
     print("(FEBio, AXIAL coupon: sigma_o=260.59 kPa -> agreement is now exact)\n")

@@ -245,7 +245,7 @@ mat3ds FEKinematicGrowthZ::Stress(FEMaterialPoint& mp)
 	
 	// Get growth deformation gradient, Fg_n+1
 	mat3dd I(1.0);				// identity (2nd order)
-	mat3d  Fg = pow(J,1.0/3.0)*I;		// isotropic-volumetric growth ONLY
+	mat3d  Fg = pow(J,1.0/3.0)*I; if (t <= m_sgrSta + eps) Fg = mat3d(1,0,0, 0,1,0, 0,0,1);	// isotropic-volumetric growth ONLY; F_g = 1 in Stage I
 	mat3d  Fgi = Fg.inverse();		// Fg_n+1 inverse
 	double Jgi = Fgi.det();		// 1/J_n
 	pt.m_Fg = Fg;				// saves Fg_n+1 to later update Jp at the end of current timestep
@@ -445,8 +445,10 @@ mat3ds FEKinematicGrowthZ::Stress(FEMaterialPoint& mp)
     	if (t > m_sgrSta + eps && m_alpm==1) { // && m_muin < 1.0) {
     	
     		// update alpha
-		lt = (F * N[1]).norm();
-		lz = (F * N[2]).norm();
+		// stretches measured from the original homeostatic state (F Fo^-1), not from the mesh (F)
+		mat3d Fr = F * Fo.inverse();
+		lt = (Fr * N[1]).norm();
+		lz = (Fr * N[2]).norm();
 		alpha = atan(tan(alpha) * pow(lt / lz, aexp));
     	
 		// pointwise, consistent with mesh generated with Matlab script
@@ -667,7 +669,7 @@ mat3ds FEKinematicGrowthZ::Stress(FEMaterialPoint& mp)
 	if (t <= m_sgrSta + eps) {
     	
 		// total Cauchy stress, s_n+1
-	    	S = Se + Ci*lm*log(Jdep*J);
+	    	S = J*Se + Ci*lm*log(Jdep*J);	// Stage I: S^x = J S_e, since F_g = 1
 	    	//S = Ci*lm*log(Jdep*J);	
 	    	
 	    	// store volumetric Cauchy stress  (original-homeostatic)
@@ -788,7 +790,7 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
 	tens4dmm IxI = dyad1mm(I,I);
 	
 	// Get growth deformation gradient, Fg_n+1
-	mat3d  Fg = pow(J,1.0/3.0)*I;		// isotropic-volumetric growth ONLY
+	mat3d  Fg = pow(J,1.0/3.0)*I; if (t <= m_sgrSta + eps) Fg = mat3d(1,0,0, 0,1,0, 0,0,1);	// isotropic-volumetric growth ONLY; F_g = 1 in Stage I
 	mat3d  Fgi = Fg.inverse();		// Fg_n+1 inverse
 	double Jgi = Fgi.det();		// 1/J_n
 	
@@ -991,8 +993,12 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
     	if (t > m_sgrSta + eps && m_alpm==1) {
     		
     		// update alpha
-		double lt = (F * Nt).norm();
-		double lz = (F * Nz).norm();
+		// stretches measured from the original homeostatic state (F Fo^-1), not from the mesh (F)
+		mat3d Foi = Fo.inverse();
+		vec3d Mt = Foi * Nt;
+		vec3d Mz = Foi * Nz;
+		double lt = (F * Mt).norm();
+		double lz = (F * Mz).norm();
 		alpha = atan(tan(alpha) * pow(lt / lz, aexp));
     	
 		// pointwise, consistent with mesh generated with Matlab script
@@ -1008,7 +1014,8 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
 		dNndta = (Nt + Nz*tan(alpha))*pow(1 + pow(tan(alpha),2),-1.5);
 		
 		// derivative 2 * d(tan(alpha)) / dC
-		dtanadC = (tent * (1.0 / (lt*lt)) - tenz * (1.0 / (lz*lz))) * (tan(alpha)*aexp);	// 2*d(tan(alpha))/d(C) : (Ft)o(Ft)
+		// lt^2 = Mt.C.Mt and lz^2 = Mz.C.Mz, so the derivative uses dyad(Mt), dyad(Mz) in place of dyad(Nt), dyad(Nz)
+		dtanadC = (dyad(Mt) * (1.0 / (lt*lt)) - dyad(Mz) * (1.0 / (lz*lz))) * (tan(alpha)*aexp);	// 2*d(tan(alpha))/d(C) : (Ft)o(Ft)
     	}
     	
     	vec3d Np = Nt * sin(alpha) + Nz * cos(alpha);
@@ -1172,6 +1179,9 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
 		// Compute the variation of the 2nd Piola-Kirchhoff stress wrt tan(alpha)
 		dSpdta = 2.0 * Shcp * pow(J,1./3.) * dyad1s(Np, dNpdta);
 		dSndta = 2.0 * Shcn * pow(J,1./3.) * dyad1s(Nn, dNndta);
+		// tangent: variation of the stress magnitude with tan(alpha), lcp2 = Gc^2 (Fe Np).(Fe Np)
+		dSpdta += 2.0 * dShcp * ((Fe*Np) * (Fe*dNpdta)) * pow(J,1./3.) * dyad(Np);
+		dSndta += 2.0 * dShcn * ((Fe*Nn) * (Fe*dNndta)) * pow(J,1./3.) * dyad(Nn);
 		
 		// Tangent stiffness (var. of alpha)
 		tens4dmm Calphp = dyad1mm(dSpdta, dtanadC);
@@ -1249,10 +1259,13 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
 	    	cp = Cp.pp(F)/J;
 	    	
 	    	// total spatial tangent, c_n+1
-	    	c = ce + cp + calph;		// [XXX] added contrib from var. of alpha
+	    	// Stage I: material tangent J Ce + J Se x C^-1 + Cp; spatial: J ce + (F Se F^T) x 1 + cp
+	    	mat3ds FSeFt = (F*Se*F.transpose()).sym();
+	    	mat3ds Iden(1.0, 1.0, 1.0, 0.0, 0.0, 0.0);
+	    	c = J*ce + dyad1mm(FSeFt, Iden) + cp + calph;
 	    	
 	    	// total PK-2 stress, S_n+1 / only to print
-	    	S = Se + Ci*lm*log(Jdep*J);	
+	    	S = J*Se + Ci*lm*log(Jdep*J);	// Stage I: S^x = J S_e, since F_g = 1	
     	}
     	
     	else {
@@ -1296,10 +1309,11 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
 		mat3ds sx = 1.0/J*(F*(Sx*F.transpose())).sym();
 
 		// volumetric spatial tangent (continuous)
-		tens4dmm cp = 1.0/3.0*(2.0*sx.tr()*IoI-2.0*dyad1mm(I,sx)-ddot(IxI,cx))+ svo*(IxI-2.0*IoI);
+		// tangent: the multiplier depends on the angle through svx, so the extra tangent in dp/dC includes calph
+		tens4dmm cp = 1.0/3.0*(2.0*sx.tr()*IoI-2.0*dyad1mm(I,sx)-ddot(IxI,cx+calph))+ svo*(IxI-2.0*IoI);
 			
 		// total spatial tangent, c_n+1
-		c = cx + cp + cpAl + calph;	// [XXX] added contrib from var. of alpha
+		c = cx + cp + cpAl + calph;	// includes the variation of alpha
 		//c = ce;	// to test
 		//c = ce + cp;	// to test
 		//c = cx;	// to test
@@ -1366,7 +1380,7 @@ double FEKinematicGrowthZ::StrainEnergyDensity(FEMaterialPoint& mp)
 	mat3dd I(1.0);				// identity (2nd order)
 	
 	// Get growth deformation gradient, Fg_n+1
-	mat3d  Fg = pow(J,1.0/3.0)*I;		// isotropic-volumetric growth ONLY
+	mat3d  Fg = pow(J,1.0/3.0)*I; if (t <= m_sgrSta + eps) Fg = mat3d(1,0,0, 0,1,0, 0,0,1);	// isotropic-volumetric growth ONLY; F_g = 1 in Stage I
 	mat3d  Fgi = Fg.inverse();		// Fg_n+1 inverse
 	double Jgi = Fgi.det();		// 1/J_n
 	
@@ -1555,8 +1569,10 @@ double FEKinematicGrowthZ::StrainEnergyDensity(FEMaterialPoint& mp)
     	
     		// update alpha 
     		// [TODO] UPDATE TANGENT TO ACCOUNT FOR VARIATION OF ALPHA
-		double lt = (F * N[1]).norm();
-		double lz = (F * N[2]).norm();
+		// stretches measured from the original homeostatic state (F Fo^-1), not from the mesh (F)
+		mat3d Fr = F * Fo.inverse();
+		double lt = (Fr * N[1]).norm();
+		double lz = (Fr * N[2]).norm();
 		alpha = atan(tan(alpha) * pow(lt / lz, aexp));
     	   	
 		// pointwise, consistent with mesh generated with Matlab script

@@ -15,6 +15,18 @@
 
 `FEKinematicGrowthZ.h` and `FEKinematicGrowthZ.cpp` are also included as plain files.
 
+Stage I (`t <= gr_start`) of `FEKinematicGrowthZ.cpp`: F_g = 1 and S = J S_e + penalty term. Fibre angle
+update (`alp_update` = 1): the stretches enter as F F_o⁻¹, and the tangent includes the variation of the
+stress magnitude and of the volumetric multiplier with the angle.
+
+`tancheck-fd.patch` (optional, applied after `mbe-kg-febio-4.12.patch`) adds a check of the tangent
+against central finite differences, for the inputs in `aneurysm-knockout/tancheck/`. The material
+parameters `fd_check`, `fd_time`, `fd_elem`, `fd_gp` and `fd_eps` select the time, element, integration
+point and relative perturbation. Three checks are written to the FEBio log: material tangent (`FDCHK`),
+element stiffness (`EFDCHK`) and global Jacobian along the Newton direction (`GFDCHK`). Files:
+`FEBioMech/FEKinematicGrowthZ.{h,cpp}`, `FEBioMech/FEElasticSolidDomain.{h,cpp}`,
+`FEBioMech/FESolidSolver2.cpp`. The patch adds code only.
+
 `mkl2025-compat.patch` replaces the sparse triangular solve `mkl_dcsrtrsv`, which
 oneAPI MKL 2025 removed, in `NumCore/ILU0_Preconditioner.cpp`,
 `NumCore/ILUT_Preconditioner.cpp` and `NumCore/IncompleteCholesky.cpp`. FEBio v4.12

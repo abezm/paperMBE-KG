@@ -4,17 +4,22 @@ width it keeps ~650 dpi at that size, and a 256-colour palette (no dithering) ho
 contour maps without visible change. The originals are not modified.
 
 Run: python3 shrink_maps.py      (after the maps are regenerated)
+     python3 shrink_maps.py ../aneurysm-knockout/s1/param-x/maps-s1b fig-param-s1b-s
+                                  (maps of the article; the prefix "param_" of plot_maps_s1.py is dropped)
 """
 import glob
 import os
+import sys
 
 from PIL import Image
 
-SRC, DST, SCALE = "fig-param", "fig-param-s", 1.0 / 3.0
+SRC, DST = (sys.argv[1], sys.argv[2]) if len(sys.argv) == 3 else ("fig-param", "fig-param-s")
+SCALE = 1.0 / 3.0
 os.makedirs(DST, exist_ok=True)
 tot_in = tot_out = 0
 for p in sorted(glob.glob(os.path.join(SRC, "*.png"))):
-    q = os.path.join(DST, os.path.basename(p))
+    name = os.path.basename(p)
+    q = os.path.join(DST, name[len("param_"):] if name.startswith("param_") else name)
     im = Image.open(p)
     w, h = im.size
     im = im.convert("RGB").resize((round(w * SCALE), round(h * SCALE)), Image.LANCZOS)
