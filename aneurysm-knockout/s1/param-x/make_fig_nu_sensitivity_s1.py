@@ -89,10 +89,12 @@ for i, a in enumerate(ax):
     a.set_xlabel(r"$\nu$ [-]")
     a.set_xlim(NUS[0], NUS[-1])                  # the axis ends on labelled ticks
     a.set_xticks(NUS)
-    tidy_axis(a, ylo[i], yhi[i])
+    tidy_axis(a, 0.0 if i == 1 else ylo[i], yhi[i])   # (b) is a percentage: from 0 % (author, 4 Oct 2026)
     a.yaxis.set_minor_locator(AutoMinorLocator(2))
     a.tick_params(which="minor", length=2)
-    a.text(0.04, 0.90, f"({'ab'[i]})", transform=a.transAxes)
+    # (b) top right: top left holds the saccular point at nu = 1 (58.6 %)
+    a.text(0.04 if i == 0 else 0.96, 0.90, f"({'ab'[i]})", transform=a.transAxes,
+           ha="left" if i == 0 else "right")
 ax[0].legend(fontsize=8, frameon=False, loc="center right")
 fig.tight_layout()
 out = os.path.join(TEX_DIR, "nu-sensitivity-s1.pdf")

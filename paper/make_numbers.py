@@ -985,6 +985,19 @@ assert len(_conv) == 1                     # the text gives the ratio of the one
 put("parEdgeConvLam", f"{_conv[0]['lam_last']:.1f}")
 # smallest ratio reached before Newton fails, rounded DOWN to one decimal (the text says "exceeds")
 put("parEdgeFailLam", f"{math.floor(10 * min(q['lam_last'] for q in _fail)) / 10:.1f}")
+# relative volume of the end ring of the segment (element 1, z = 0 to 0.9 mm, axial displacement fixed) at the
+# last converged increment of the failed retries; the ring is uniform around the circumference and the two ends
+# behave alike (xplt files read on 5 Oct 2026). Every failed retry reports negative Jacobians in its log.
+_jend = []
+for q in _fail:
+    _d = os.path.join(P, "edge-retry", f"{q['type']}_nu{q['nu']:g}_sz{q['sz']:g}_{q['i']}_{q['j']}_dt0.1_b")
+    _last = open(os.path.join(_d, f"elem-{q['type']}-B_MBE.txt")).read().split("*Step")[-1]
+    _row = [l for l in _last.splitlines() if l and l[0].isdigit()][0].split(",")
+    assert int(_row[0]) == 1
+    _jend.append(float(_row[4]))
+    assert "negative jacobians" in open(os.path.join(_d, "_run.log")).read().lower(), _d
+assert max(_jend) < 0.01, _jend
+put("parEdgeJEnd", f"{max(_jend):.2g}")
 # relative volume at the edge of convergence: J at the converged grid points that have a
 # non-converged neighbour on the grid, over the 11 paper profiles (range and median), and
 # the largest converged J of the whole sweep
@@ -1121,6 +1134,40 @@ for name in ("Fus", "Sac"):
         assert all(v <= LAM_MAX for v in lam) == (not (name == "Sac" and ser == "Nu")), (name, ser, lam)
         if name == "Sac" and ser == "Nu":
             assert lam[-1] > LAM_MAX and all(v <= LAM_MAX for v in lam[:-1])
+
+# ============================================================ rate-dependent lesion (Section 5.3)
+# AK/s1/fullkg-sign (author 5 Oct 2026): full-KG of the fusiform lesion of Figure 4(a), s_load = 100 days, from the MBE deck
+# param-x/matrix-fus-el.feb with MBE = 0 (setup_run.py). a: deposition stretches of Table 2; b: unit elastin deposition
+# stretches. Element 10 is at the apex (z = 7.2 mm), node 20 likewise; -ALL.txt holds J of every element.
+def _fkg_blocks(path):
+    out = []
+    for blk in open(path).read().split("*Step")[1:]:
+        t = float(re.search(r"\*Time\s*=\s*(\S+)", blk).group(1))
+        out.append((t, np.array([[float(v) for v in l.split(",")] for l in blk.splitlines() if l and l[0].isdigit()])))
+    return out
+_FK = os.path.join(S1, "fullkg-sign")
+_la = open(os.path.join(_FK, "a", "fus-el-full.log")).read()
+_lb = open(os.path.join(_FK, "b", "fus-el-full.log")).read()
+assert "E R R O R   T E R M I N A T I O N" in _la and "N O R M A L   T E R M I N A T I O N" in _lb
+_ea = _fkg_blocks(os.path.join(_FK, "a", "matrix-fus-el-eA.txt"))
+_eb = _fkg_blocks(os.path.join(_FK, "b", "matrix-fus-el-eA.txt"))
+_ja = [b[0, 4] for t, b in _ea if t > 1 + 1e-9]
+assert all(y < x for x, y in zip(_ja, _ja[1:])) and _ja[0] < 1.0      # the apex volume decreases from the first increment
+_feb = open(os.path.join(_FK, "a", "fus-el-full.feb")).read()
+assert "<gr_end>101.0</gr_end>" in _feb and "<MBE>0</MBE>" in _feb
+_zc = float(re.search(r"<z_center>([^<]+)</z_center>", _feb).group(1))
+_nod = {int(m.group(1)): tuple(map(float, m.group(2).split(","))) for m in re.finditer(r'<node id="\s*(\d+)">([^<]+)</node>', _feb)}
+_els = {int(m.group(1)): [int(v) for v in m.group(2).split(",")] for m in re.finditer(r'<elem id="\s*(\d+)">([^<]+)</elem>', _feb)}
+_all = _fkg_blocks(os.path.join(_FK, "a", "matrix-fus-el-ALL.txt"))
+assert abs(_all[-1][0] - _ea[-1][0]) < 1e-9
+_row = _all[-1][1][_all[-1][1][:, 1].argmax()]
+_zmax = np.mean([_nod[n][2] for n in _els[int(_row[0])][:8]])
+put("fkgFailS", f"{_ea[-1][0]:.0f}")
+put("fkgFailPct", f"{_ea[-1][0] - 1:.0f}")                            # degradation period: s = 1 to 101 days
+put("fkgApexJ", f"{_ja[-1]:.2f}")
+put("fkgOffApexJ", f"{_row[1]:.1f}")
+put("fkgOffApexDz", f"{abs(_zmax - _zc):.1f}")
+put("fkgUnitJ", f"{_eb[-1][1][0, 4]:.3f}")
 
 # ======================================================================== output
 _bad = sorted(f for f in OUTSIDE_S1 if not f.startswith(S1_KEEP))

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Figure 3 over the FULL load range F_o <= F <= 8 F_o (trial variants).
 
-Same data and house style as make_fig_homeostasis.py (red = MBE-KG, black = passive,
+Same data and house style as make_fig_homeostasis.py (red = MBE-KG, black = hyperelastic,
 line = finite element, open circles = closed form J = (F/F_o)^{3/2}), but without the
 cut at 3 F_o. Usage:
 
@@ -52,7 +52,7 @@ def load(tag):
     """F/F_o, sigma_zz [kPa], J and the stretches (axial, circ, radial) on the branch."""
     def block(path, ncol):
         t, d = None, {}
-        # passive run (no growth, unaffected by lo_opt) is read from uniax-fractions
+        # hyperelastic run (no growth, unaffected by lo_opt) is read from uniax-fractions
         src = HERE if "MBE8" in path else os.path.join(HERE, "..", "..", "uniax-fractions")
         for ln in open(os.path.join(src, path)):
             ln = ln.strip()
@@ -138,7 +138,7 @@ if VAR == "D":
     for d in (m, p):
         for k in ("lz", "ly", "lx"):
             d["r" + k] = d[k] / d[k][0]
-    # passive: axial solid, circumferential dashed, radial dash-dotted
+    # hyperelastic: axial solid, circumferential dashed, radial dash-dotted
     ax[1].plot(p["F"], p["rlz"], color=BLACK, lw=1.0, zorder=2)
     ax[1].plot(p["F"], p["rly"], color=BLACK, lw=1.0, ls="--", zorder=2)
     ax[1].plot(p["F"], p["rlx"], color=BLACK, lw=1.0, ls="-.", zorder=2)
@@ -212,7 +212,7 @@ for i, a in enumerate(ax):
            bbox=dict(fc="white", ec="none", pad=1.5))
 
 h = [plt.Line2D([], [], color=RED, lw=1.0, label="MBE-KG (equilibrated)"),
-     plt.Line2D([], [], color=BLACK, lw=1.0, label="passive (no growth)"),
+     plt.Line2D([], [], color=BLACK, lw=1.0, label="hyperelastic (growth disabled)"),
      plt.Line2D([], [], color=RED, ls="none", marker="o", ms=3.6, mfc="none",
                 mec=RED, label="closed form")]
 if VAR == "C":
@@ -224,7 +224,7 @@ fig.tight_layout(rect=(0, 0, 1, 0.92))
 os.makedirs(OUT, exist_ok=True)
 # v2: manuscript PDF (new name, original untouched) + inspection PNG next to the script
 # alp1/ (2 Oct 2026): copy of ../../uniax-lo1/make_fig_homeostasis_full_v2.py; MBE8 from this folder (angle
-# updated), the passive run from ../../uniax-fractions/ (no Stage II); PDF written into the manuscript folder
+# updated), the hyperelastic run from ../../uniax-fractions/ (no Stage II); PDF written into the manuscript folder
 pdf = os.path.normpath(os.path.join(HERE, "..", "..", "..", "..", "paper", "uniax-mbe-homeostasis-s1.pdf"))
 png = os.path.join(HERE, "uniax-mbe-homeostasis-s1.png")
 for q in (pdf, png):
@@ -239,7 +239,7 @@ for F0 in (3.0, 8.0):
         print(f"  F={F0:.0f}Fo {nm}: sigma={np.interp(F0, d['F'], d['sig']):9.2f} kPa  "
               f"lam_z={np.interp(F0, d['F'], d['lz']):.4f}  J={np.interp(F0, d['F'], d['J']):.4f}")
 print(f"  sigma_o = {SIG_O:.2f} kPa; F at last record: MBE {m['F'][-1]:.4f}, PASS {p['F'][-1]:.4f}")
-print(f"  max |J_passive - 1| = {np.max(abs(p['J'] - 1)):.3e}")
+print(f"  max |J_hyperelastic - 1| = {np.max(abs(p['J'] - 1)):.3e}")
 J3 = m["J"] ** (1.0 / 3.0)
 for k in ("lz", "ly", "lx"):
     r = m[k] / m[k][0]

@@ -7,11 +7,15 @@ rows = morphology, columns = one profile value each. Copy of render_profile_lam.
   nu:  columns nu = 1, 3, 5, 7 at s_z = 3 mm
   lad:  Fig. 6 joined, two rows (kept by the author); fus, sac:  Fig. 6 split in two (author, 2026-10-04): one row, columns d_e = d_c of Fig. 6 (nu = 5, s_z = 3 mm)
 
-All four figures share ONE colour bar (author, 2026-10-04): limits = smallest and largest element value over
-every panel of the four (all_range()), bands 0.1 wide from 0.6 to 2.5.
+All four figures share ONE colour bar (author, 2026-10-04): limits = smallest and largest NODAL value over
+every panel of the four (all_range()), bands 0.1 wide from 0.6 to 2.6.
+
+The colour is the nodal lambda_r/lambda_ro, not an element average (author, 2026-10-05: the average made the
+quadratic hex27 look like first-order elements, and the bar stopped at 2.49 under a 2.57 label). Each hex27 is
+drawn as 8 linear sub-hexes over its 27 nodes, so the colour varies inside the element.
 
 Column headers on top, row labels (morphology, d_e = d_c) on the left, one colour bar centred on the
-two rows (60 % of their height, as in Fig. 4); colour bands as the 4 x 4 draft (0.6 - 2.5, 0.1 wide).
+two rows (60 % of their height, as in Fig. 4).
 
   PYTHONDONTWRITEBYTECODE=1 PYVISTA_OFF_SCREEN=true python3 render_profile_matrix.py sz|nu|fus|sac
 Out: profile-{sz,nu}-lam-s1.{png,pdf}, ladder-{fus,sac}-lam-s1.{png,pdf}.
@@ -113,10 +117,11 @@ _CM = {0: row_cmap(0, [0.95, 0.90, 0.50, 0.14], 11, rep_up=2),   # grid of 0.25:
 # (lo, hi, n bands, interior tick step, tick format, colour map, unused)
 ROW_BARS = [(0.0, 6.5, 26, 1.0, "%.1f", _CM[0], None),
             (0.5, 3.0, 10, 0.5, "%.1f", _CM[1], None)]
-# radius ratio, one bar for both rows: bands 0.1 wide from 0.6 to 2.4, white at 1 (a band edge),
-# 4 bands below 1 and 14 above, each side on its own half of PuOr_r as in row 0 of the J figure
-# profile figure: sac nu = 6 reaches 2.44 (elements), so the bar runs to 2.5 (15 bands above 1)
-LAM_BAR = (0.6, 2.5, 19, 0.2, "%.1f", row_cmap(0 if VAR in LADDER or VAR == "lad" else 2, [0.85, 0.62, 0.40, 0.16], 15), None)   # PuOr: Fig. 6; PiYG: s_z, nu
+# radius ratio, one bar for both rows: bands 0.1 wide, white at 1 (a band edge), each side on its own
+# half of the diverging map. Nodal values span 0.607 - 2.573 (sac nu = 7), so the bands run from 0.6 to
+# 2.6: 4 below 1 and 16 above
+# PiYG_r in every figure, Fig. 6 included (author, 2026-10-05: same colours in Figs. 6, 7 and 8)
+LAM_BAR = (0.6, 2.6, 20, 0.2, "%.1f", row_cmap(2, [0.85, 0.62, 0.40, 0.16], 16), None)
 ROW_BARS = [LAM_BAR] * 2
 LABEL_CLEAR = 40                         # target clearance (px) label block - mesh, per row
 EDGE_W = 1.0                             # edge line width (px)
@@ -133,9 +138,9 @@ OUT = os.path.join(HERE, "ladder-lam-s1-common.png" if VAR == "lad" else
                    f"ladder-{VAR}-lam-s1.png" if VAR in LADDER else f"profile-{VAR}-lam-s1.png")
 
 
-def elem_lam(nodes_txt, conn):
-    """Per element: mean over its nodes of r / r_o (radial position at the end of the insult over the
-    value of the block *Time = 1), the nodal ratio of lam_ratio_range()."""
+def node_lam(nodes_txt):
+    """Per node (0-based, as conn): r / r_o, radial position at the end of the insult over the value of
+    the block *Time = 1, the nodal ratio of lam_ratio_range()."""
     blocks, cur = {}, None
     for line in open(nodes_txt):
         s = line.strip()
@@ -148,18 +153,18 @@ def elem_lam(nodes_txt, conn):
     r = np.zeros(max(hom))
     for i in hom:
         r[i - 1] = fin[i] / hom[i]
-    return r[conn].mean(axis=1)
+    return r
 
 
 def all_range():
-    """Smallest and largest element lambda_r/lambda_ro over every panel of the four figures."""
+    """Smallest and largest nodal lambda_r/lambda_ro over every panel of the four figures."""
     lo, hi = np.inf, -np.inf
     for var in ("sz", "nu", "fus", "sac"):
         cases, stem, *_ = cases_of(var)
         for *_, key, _h, _l in cases:
             p = os.path.join(HERE, stem[key])
-            L = elem_lam(p + "-NODES.txt", m.parse_connectivity(p + ".feb"))
-            lo, hi = min(lo, L.min()), max(hi, L.max())
+            L = m.lam_ratio_range(p + "-NODES.txt")
+            lo, hi = min(lo, L[0]), max(hi, L[1])
     return lo, hi
 
 
@@ -170,7 +175,8 @@ def load():
         conn = m.parse_connectivity(p + ".feb")
         pts = m.deformed_points(p + "-NODES.txt")
         J, sed = m.elem_fields(p + "-ALL.txt", conn.shape[0])
-        L = elem_lam(p + "-NODES.txt", conn)
+        L = node_lam(p + "-NODES.txt")                    # nodal, coloured as point data
+        assert len(L) == len(pts), (tag, len(L), len(pts))
         # element edges only (hex27 boundaries, 3-node polylines), lifted toward the camera
         edges = {}
         for e in conn:
@@ -183,7 +189,11 @@ def load():
         lines.lines = np.hstack([[3, *ids] for ids in edges.values()]).astype(np.int64)
         assert lines.n_verts == 0 and lines.n_lines == len(edges)
         data_lines = lines
-        data[tag] = dict(grid=m.build_grid(conn, pts, L, sed), J=(J.min(), J.max()), L=(L.min(), L.max()),
+        grid = m.build_grid(conn, pts, L[conn].mean(axis=1), sed)   # geometry: 8 sub-hexes per hex27
+        del grid.cell_data["J"]                           # element value replaced by the nodal one
+        grid.point_data["J"] = L
+        used = np.unique(conn)
+        data[tag] = dict(grid=grid, J=(J.min(), J.max()), L=(L[used].min(), L[used].max()),
                          Lall=L,
                          lines=data_lines,
                          conn=conn, pts=pts,
@@ -298,8 +308,8 @@ def draw_bar(canvas, r, lo, hi, n, step, fmt, cmap, below, vmin, vmax):
             y0, y1 = (ye - 3, ye) if end == vmin else (ye, ye + 3)
             draw.rectangle([x0, y0, x0 + sw, y1], fill=tuple(cols[i]))
     canvas.paste(title, (int(x0 + sw / 2 - title.width / 2), int(ytop - title.height - 48)), title)   # clear of the end value
-    ends = [(vmin, "%.2f" % vmin), (vmax, "%.2f" % vmax)]
-    inner = [(v, "%.2f" % v) for v in np.arange(np.ceil(vmin / step) * step, vmax, step)
+    ends = [(vmin, fmt % vmin), (vmax, fmt % vmax)]                 # ends rounded to 0.1 (author, 2026-10-05)
+    inner = [(v, fmt % v) for v in np.arange(np.ceil(vmin / step) * step, vmax, step)
              if min(abs(yof(v) - yof(vmin)), abs(yof(v) - yof(vmax))) >= 1.5 * m.LABEL_PX]   # 2.40 hit 2.44
     n_all = len(np.arange(np.ceil(vmin / step) * step, vmax, step))
     print("bar ticks: %d of %d interior kept" % (len(inner), n_all))
@@ -321,7 +331,10 @@ def main():
         jl, jh = data[tag]["L"]
         assert lo <= jl and jh <= hi, (tag, jl, jh, lo, hi)
     _all = all_range()
-    RANGE = {r: _all for r in range(NROW)}               # one bar, common to the four figures
+    # one bar, common to the four figures, its ends rounded outward to 0.1 (author, 2026-10-05: 2.57 -> 2.6)
+    _bar = (np.floor(_all[0] * 10 + 1e-9) / 10, np.ceil(_all[1] * 10 - 1e-9) / 10)
+    assert _bar[0] <= _all[0] and _all[1] <= _bar[1], (_bar, _all)
+    RANGE = {r: _bar for r in range(NROW)}
     print("assert: all J inside the band limits; bar ranges", RANGE)
     blocks = {tag: label_block(tag, d, data) for _, _, tag, d, _ in CASES}
 
@@ -383,20 +396,21 @@ def main():
         STRIPS[r] = max(0, 6 - p)
     print("label offset p per row:", label_p, "strip px per row:", STRIPS)
 
-    # pixel checks in panels (d) and (h): the visible element (outer face towards the camera)
-    # with the highest J, and the one with the lowest J (contracted tube end, which must show
-    # the lowest band); the outer face-centre node is projected to the image
+    # pixel checks in panels (d) and (h): the visible outer face-centre node (face towards the camera)
+    # with the highest nodal value, and the one with the lowest (contracted tube end, which must show
+    # the lowest band); that node is projected to the image and its own value is the expected colour
     vd = np.asarray(m.VIEWDIR) / np.linalg.norm(m.VIEWDIR)
     probes, probe_J = [], {}
     for r, tag in ((r_, t_) for r_, c_, t_, *_ in CASES if c_ == NCOL - 1):   # last panel of each row
         conn, pts, J = data[tag]["conn"], data[tag]["pts"], data[tag]["Lall"]
         vis = []
         for e in range(conn.shape[0]):
-            fc = pts[conn[e, 20:26]]                      # the six face-centre nodes
-            o = fc[np.argmax(np.hypot(fc[:, 0], fc[:, 1]))]
+            fn = conn[e, 20:26]                           # the six face-centre nodes
+            k = fn[np.argmax(np.hypot(pts[fn, 0], pts[fn, 1]))]
+            o = pts[k]
             rad = np.array([o[0], o[1], 0.0]) / np.hypot(o[0], o[1])
             if rad @ vd > 0.8:
-                vis.append((J[e], o))
+                vis.append((J[k], o))
         for key, (Je, o) in (("max", max(vis, key=lambda v: v[0])), ("min", min(vis, key=lambda v: v[0]))):
             probes.append(((tag, key), tag, o))
             probe_J[(tag, key)] = (r, Je)
