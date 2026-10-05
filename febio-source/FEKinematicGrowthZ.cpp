@@ -258,7 +258,7 @@ mat3ds FEKinematicGrowthZ::Stress(FEMaterialPoint& mp)
 	
 	Fe = F*Fgi;		// 
 	if (m_lo_opt && t > m_sgrSta + eps){
-		Fe = Fo;	// elastic strain does not evolve during G&R of aneurysms?
+		Fe = Fo;	// lo_opt = 1: F_e = F_o after gr_start
 	}
 	
 	// =======================================
@@ -433,9 +433,9 @@ mat3ds FEKinematicGrowthZ::Stress(FEMaterialPoint& mp)
     		// Copy the local element basis directions to n
 		//vec3d n[2];
     		//n[0].x = Q[0][0]; n[0].y = Q[1][0]; n[0].z = Q[2][0];	// axial? 	
-    		//n[1].x = Q[0][1]; n[1].y = Q[1][1]; n[1].z = Q[2][1];	// circ.?
+    		//n[1].x = Q[0][1]; n[1].y = Q[1][1]; n[1].z = Q[2][1];	// circumferential direction
     		N[2].x = Q[0][0]; N[2].y = Q[1][0]; N[2].z = Q[2][0];	// axial? 	
-    		N[1].x = Q[0][1]; N[1].y = Q[1][1]; N[1].z = Q[2][1];	// circ.?
+    		N[1].x = Q[0][1]; N[1].y = Q[1][1]; N[1].z = Q[2][1];	// circumferential direction
     		Np = N[2]*cos(alpha) + N[1]*sin(alpha); 
 		Nn = N[2]*cos(alpha) - N[1]*sin(alpha); 
     	}
@@ -463,18 +463,8 @@ mat3ds FEKinematicGrowthZ::Stress(FEMaterialPoint& mp)
     	vec3d Np = Nt * sin(alpha) + Nz * cos(alpha);
     	vec3d Nn = Nt * sin(alpha) - Nz * cos(alpha);
     	
-    	// --- CÓDIGO DE DEPURACIÓN PARA IMPRIMIR ---
-	// Imprime los vectores base
-	//feLog("N[1] (Nt) = [%.5f, %.5f, %.5f]\n", Nt.x, Nt.y, Nt.z);
-	//feLog("N[2] (Nz) = [%.5f, %.5f, %.5f]\n", Nz.x, Nz.y, Nz.z);
 	
-	// Imprime el ángulo y estiramientos
-	//feLog("lt = %.5f, lz = %.5f, alpha_act = %.5f rad\n", lt, lz, alpha_act);
 	
-	// Imprime las fibras resultantes
-	//feLog("Np = [%.5f, %.5f, %.5f]\n", Np.x, Np.y, Np.z);
-	//feLog("Nn = [%.5f, %.5f, %.5f]\n", Nn.x, Nn.y, Nn.z);
-	//feLog("--------------------------------------------------\n");
     	
     	// Evaluate the structural direction in the reference configuration
 	//vec3d  Np = N[1]*sin(alpha)+N[2]*cos(alpha);	// original diagonal fiber dir.
@@ -572,8 +562,6 @@ mat3ds FEKinematicGrowthZ::Stress(FEMaterialPoint& mp)
 			lzo = (F*N[2]).norm();
 			lpo = (F*Np).norm();
 			lno = (F*Nn).norm();
-			// hacer G = 1?? REV; MARCOS NO LO HACE
-			// G > 1 uniaxial leads to SDB!?
 			//Gm = 1.0;
 			//Gc = 1.0;
 		}
@@ -802,7 +790,7 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
 	
 	Fe = F*Fgi;		// 
 	if (m_lo_opt && t > m_sgrSta + eps){
-		Fe = Fo;	// elastic strain does not evolve during G&R of aneurysms?
+		Fe = Fo;	// lo_opt = 1: F_e = F_o after gr_start
 	}
 	
 	// =======================================
@@ -979,9 +967,9 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
     		// Copy the local element basis directions to n
 		//vec3d n[2];
     		//n[0].x = Q[0][0]; n[0].y = Q[1][0]; n[0].z = Q[2][0];	// axial? 	
-    		//n[1].x = Q[0][1]; n[1].y = Q[1][1]; n[1].z = Q[2][1];	// circ.?
+    		//n[1].x = Q[0][1]; n[1].y = Q[1][1]; n[1].z = Q[2][1];	// circumferential direction
     		N[2].x = Q[0][0]; N[2].y = Q[1][0]; N[2].z = Q[2][0];	// axial? 	
-    		N[1].x = Q[0][1]; N[1].y = Q[1][1]; N[1].z = Q[2][1];	// circ.?
+    		N[1].x = Q[0][1]; N[1].y = Q[1][1]; N[1].z = Q[2][1];	// circumferential direction
     		Np = N[2]*cos(alpha) + N[1]*sin(alpha); 
 		Nn = N[2]*cos(alpha) - N[1]*sin(alpha); 
     	}
@@ -1124,8 +1112,6 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
 			lzo = (F*N[2]).norm();
 			lpo = (F*Np).norm();
 			lno = (F*Nn).norm();
-			// hacer G = 1?? REV; MARCOS NO LO HACE
-			// G > 1 uniaxial leads to SDB!?
 			//Gm = 1.0;
 			//Gc = 1.0;
 		}
@@ -1197,7 +1183,7 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
 		///*	 
 		if(m_degr==1 && t > m_sgrSta + eps) {	// constant Fo (aneurysms)
 			Ce = Ce*0.0;
-			dSedJ = dSedJ*0.0;	// [REV; commmented it does not converge]
+			dSedJ = dSedJ*0.0;	// zero with constant F_o
 		}  
 		//*/
 		
@@ -1208,7 +1194,7 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
 	//ep.m_J = J;
 	
 	// spatial elastic tangent
-	//tens4dmm ce = m_Base->Tangent(mp);	// no funciona?
+	//tens4dmm ce = m_Base->Tangent(mp);
 	tens4dmm ce = Ce.pp(F)/J;
 	//tens4dmm Ce = ce.pp(F.inverse())*J;// pull-back to get material tangent
 	
@@ -1229,8 +1215,8 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
 	mat3ds C = ep.RightCauchyGreen();
 	mat3ds Ci = C.inverse();
 
-	tens4dmm CixCi = dyad1mm(Ci,Ci);	// 	rev
-	tens4dmm CioCi = dyad4mm(Ci,Ci);	// debe ser el simetrico: 1/2 ...etc  (Holzapfel, p.255)
+	tens4dmm CixCi = dyad1mm(Ci,Ci);
+	tens4dmm CioCi = dyad4mm(Ci,Ci);	// (Ci dyad4 Ci)_ijkl = 1/2 (Ci_ik Ci_jl + Ci_il Ci_jk) (Holzapfel, p. 255)
 	//tens4ds CixCi = dyad1s(Ci);
 	//tens4ds CioCi = dyad4s(Ci);
 	
@@ -1290,8 +1276,6 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
 		
 	    	// total PK-2 stress, S_n+1
 	    	S = Sx - J*p*Ci;   
-	    	//S = Se; // test
-	    	//mat3ds S = Sx; // test
 	 
 	    	
 	    	// Extra material tangent (for isotropic growth ONLY)
@@ -1314,9 +1298,6 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
 			
 		// total spatial tangent, c_n+1
 		c = cx + cp + cpAl + calph;	// includes the variation of alpha
-		//c = ce;	// to test
-		//c = ce + cp;	// to test
-		//c = cx;	// to test
 	}
 	    	
 	//feLog("mu/cc = %f\t%f\n",mu,cc);
@@ -1392,7 +1373,7 @@ double FEKinematicGrowthZ::StrainEnergyDensity(FEMaterialPoint& mp)
 	
 	Fe = F*Fgi;		// 
 	if (m_lo_opt && t > m_sgrSta + eps){
-		Fe = Fo;	// elastic strain does not evolve during G&R of aneurysms?
+		Fe = Fo;	// lo_opt = 1: F_e = F_o after gr_start
 	}
 
 	// substitute elastic deformation in material point
@@ -1558,9 +1539,9 @@ double FEKinematicGrowthZ::StrainEnergyDensity(FEMaterialPoint& mp)
     		// Copy the local element basis directions to n
 		//vec3d n[2];
     		//n[0].x = Q[0][0]; n[0].y = Q[1][0]; n[0].z = Q[2][0];	// axial? 	
-    		//n[1].x = Q[0][1]; n[1].y = Q[1][1]; n[1].z = Q[2][1];	// circ.?
+    		//n[1].x = Q[0][1]; n[1].y = Q[1][1]; n[1].z = Q[2][1];	// circumferential direction
     		N[2].x = Q[0][0]; N[2].y = Q[1][0]; N[2].z = Q[2][0];	// axial? 	
-    		N[1].x = Q[0][1]; N[1].y = Q[1][1]; N[1].z = Q[2][1];	// circ.?
+    		N[1].x = Q[0][1]; N[1].y = Q[1][1]; N[1].z = Q[2][1];	// circumferential direction
     		Np = N[2]*cos(alpha) + N[1]*sin(alpha); 
 		Nn = N[2]*cos(alpha) - N[1]*sin(alpha); 
     	}
@@ -1568,7 +1549,6 @@ double FEKinematicGrowthZ::StrainEnergyDensity(FEMaterialPoint& mp)
     	if (t > m_sgrSta + eps && m_alpm==1) {
     	
     		// update alpha 
-    		// [TODO] UPDATE TANGENT TO ACCOUNT FOR VARIATION OF ALPHA
 		// stretches measured from the original homeostatic state (F Fo^-1), not from the mesh (F)
 		mat3d Fr = F * Fo.inverse();
 		double lt = (Fr * N[1]).norm();
@@ -1669,8 +1649,6 @@ double FEKinematicGrowthZ::StrainEnergyDensity(FEMaterialPoint& mp)
 			lzo = (F*N[2]).norm();
 			lpo = (F*Np).norm();
 			lno = (F*Nn).norm();
-			// hacer G = 1?? REV; MARCOS NO LO HACE
-			// G > 1 uniaxial leads to SDB!?
 			//Gm = 1.0;
 			//Gc = 1.0;
 		}

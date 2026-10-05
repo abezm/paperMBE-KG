@@ -102,7 +102,7 @@ index b5a5971..b89b0cb 100644
      //! Calculates the inertial force vector for solid elements
      void ElementInertialForce(FESolidElement& el, vector<double>& fe);
 diff --git a/FEBioMech/FEKinematicGrowthZ.cpp b/FEBioMech/FEKinematicGrowthZ.cpp
-index a9d7a56..46344f5 100755
+index 5b041bd..36eb4b3 100755
 --- a/FEBioMech/FEKinematicGrowthZ.cpp
 +++ b/FEBioMech/FEKinematicGrowthZ.cpp
 @@ -68,6 +68,13 @@ BEGIN_FECORE_CLASS(FEKinematicGrowthZ, FEElasticMaterial)
@@ -139,7 +139,7 @@ index a9d7a56..46344f5 100755
      	
      	vec3d Np = Nt * sin(alpha) + Nz * cos(alpha);
      	vec3d Nn = Nt * sin(alpha) - Nz * cos(alpha);
-@@ -678,6 +691,7 @@ mat3ds FEKinematicGrowthZ::Stress(FEMaterialPoint& mp)
+@@ -666,6 +679,7 @@ mat3ds FEKinematicGrowthZ::Stress(FEMaterialPoint& mp)
  	    	
  	    	// store Fo
  	    	pt.m_Fo = F;
@@ -147,7 +147,7 @@ index a9d7a56..46344f5 100755
      		
      	}
      	else {
-@@ -695,6 +709,8 @@ mat3ds FEKinematicGrowthZ::Stress(FEMaterialPoint& mp)
+@@ -683,6 +697,8 @@ mat3ds FEKinematicGrowthZ::Stress(FEMaterialPoint& mp)
  		
  	    	// total PK-2 stress, S_n+1
  	    	S = Sx - J*p*Ci;   
@@ -156,7 +156,7 @@ index a9d7a56..46344f5 100755
  	    	
  	    	// prints stuff
  		//int m_writeRes = 0;
-@@ -1263,6 +1279,7 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
+@@ -1249,6 +1265,7 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
  	    	mat3ds FSeFt = (F*Se*F.transpose()).sym();
  	    	mat3ds Iden(1.0, 1.0, 1.0, 0.0, 0.0, 0.0);
  	    	c = J*ce + dyad1mm(FSeFt, Iden) + cp + calph;
@@ -164,15 +164,15 @@ index a9d7a56..46344f5 100755
  	    	
  	    	// total PK-2 stress, S_n+1 / only to print
  	    	S = J*Se + Ci*lm*log(Jdep*J);	// Stage I: S^x = J S_e, since F_g = 1	
-@@ -1314,6 +1331,7 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
+@@ -1298,6 +1315,7 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
  			
  		// total spatial tangent, c_n+1
  		c = cx + cp + cpAl + calph;	// includes the variation of alpha
 +		m_dbg_cx = cx; m_dbg_cp = cp; m_dbg_cpAl = cpAl; m_dbg_calph = calph;	// TANCHECK
- 		//c = ce;	// to test
- 		//c = ce + cp;	// to test
- 		//c = cx;	// to test
-@@ -1350,6 +1368,10 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
+ 	}
+ 	    	
+ 	//feLog("mu/cc = %f\t%f\n",mu,cc);
+@@ -1331,6 +1349,10 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
      		c(1,2,0,0),c(1,2,1,1),c(1,2,2,2),c(1,2,0,1),c(1,2,1,2),c(1,2,2,0),
      		c(2,0,0,0),c(2,0,1,1),c(2,0,2,2),c(2,0,0,1),c(2,0,1,2),c(2,0,2,0));
      	}
@@ -183,7 +183,7 @@ index a9d7a56..46344f5 100755
  	return c;
  }
  
-@@ -1723,3 +1745,158 @@ tens4ds FEKinematicGrowthZ::Tangent(FEMaterialPoint& mp)
+@@ -1701,3 +1723,158 @@ tens4ds FEKinematicGrowthZ::Tangent(FEMaterialPoint& mp)
  {
  	return tens4ds(0.0);
  }
