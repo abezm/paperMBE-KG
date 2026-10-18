@@ -590,7 +590,10 @@ J_full = v[-1, 3]
 _, v = one(blocks(os.path.join(A2, "speedup-fair", "stop", "T-mbe-1p10-r1_elem-fus-sl100-2st-ds5.txt")))
 J_mbe20 = v[-1, 3]
 put("termJ", f"{J_mbe_fus:.4f}")
-put("termMbeFull", pct(abs(J_full - J_mbe_fus) / J_mbe_fus, 4))   # same lesion, apex element 10
+# full-KG against its timed MBE-KG pair (audit D2, 2026-10-05): the full-KG run stops when J changes by less
+# than stopTol (J - 1) over s_load/20, so the agreement is of that order; the 522-step MBE run (J_mbe_fus)
+# differs from the timed MBE run by termMbeSteps and gave a smaller, accidental figure (0.0002 %)
+put("termMbeFull", pct(abs(J_full - J_mbe20) / J_mbe20, 3))   # same lesion, apex element 10
 put("termMbeSteps", pct(abs(J_mbe20 - J_mbe_fus) / J_mbe_fus, 3))
 steps522 = int(re.search(r"Number of time steps completed[\. ]*: (\d+)",
                          open(os.path.join(F, "apex", "rate-fusiform-MBE.log")).read()).group(1))
@@ -625,12 +628,15 @@ assert abs(float(fair2["mbe-1p10-b"]["wall_min_s"]) / float(fair["mbe-1p10"]["wa
 for c, name, src in (("mbe-1p10", "AneuMbe", fair), ("full-ds5", "AneuFull", fair),
                      ("hyp-1", "AneuHyp", fair2), ("full-ds1", "AneuFullFine", fair)):
     tim["aneu-" + name] = dict(wall_s=src[c]["wall_min_s"], steps=src[c]["steps"], newton=src[c]["newton"])
-    put(f"time{name}", f"{float(src[c]['wall_min_s']):.0f}")
+    put(f"time{name}", f"{float(src[c]['wall_min_s']):.1f}")
     put(f"steps{name}", src[c]["steps"])
     put(f"newton{name}", src[c]["newton"])
 assert fair["full-ds5"]["per_stage_steps_iters"].startswith("1/") and fair["mbe-1p10"]["per_stage_steps_iters"].startswith("1/")
 a_m, a_f = tim["aneu-AneuMbe"], tim["aneu-AneuFull"]
-put("speedTime", f"{float(a_f['wall_s']) / float(a_m['wall_s']):.1f}")
+# ratio of the printed (one-decimal) times: 41.3/16.9 must print 2.4, not 2.5 from 41.31/16.85 (referee 3, round 2, 2026-10-11)
+def _r1(x):
+    return round(float(x), 1)
+put("speedTime", f"{_r1(a_f['wall_s']) / _r1(a_m['wall_s']):.1f}")
 put("speedSteps", f"{int(a_f['steps']) / int(a_m['steps']):.1f}")
 put("speedNewton", f"{int(a_f['newton']) / int(a_m['newton']):.1f}")
 put("itPerStepMbe", f"{int(a_m['newton']) / int(a_m['steps']):.1f}")
@@ -739,12 +745,13 @@ put("speedNewtonSac", f"{int(sac_t['full-ds5-sac']['newton']) / int(sac_t['mbe-1
 sac_c = {r["case"]: r for r in csv.DictReader(open(os.path.join(SAC, "clean", "timing_sac.csv")))}
 for c in ("mbe-1p10-sac", "full-ds5-sac"):
     assert (sac_c[c]["steps"], sac_c[c]["newton"]) == (sac_t[c]["steps"], sac_t[c]["newton"]), c
-put("timeSacMbe", f"{float(sac_c['mbe-1p10-sac']['wall_min_s']):.0f}")
-put("timeSacFull", f"{float(sac_c['full-ds5-sac']['wall_min_s']):.0f}")
-put("speedTimeSac", f"{float(sac_c['full-ds5-sac']['wall_min_s']) / float(sac_c['mbe-1p10-sac']['wall_min_s']):.1f}")
-# mean speed-up of the two lesions (abstract; rABC-8, paper-review session): mean of the unrounded ratios
+put("timeSacMbe", f"{float(sac_c['mbe-1p10-sac']['wall_min_s']):.1f}")
+put("timeSacFull", f"{float(sac_c['full-ds5-sac']['wall_min_s']):.1f}")
+put("speedTimeSac", f"{_r1(sac_c['full-ds5-sac']['wall_min_s']) / _r1(sac_c['mbe-1p10-sac']['wall_min_s']):.1f}")
+# mean speed-up of the two lesions (abstract; rABC-8, paper-review session): mean of the unrounded step ratios and of
+# the ratios of the printed times (round R2T, 2026-10-11)
 put("speedStepsMean", f"{(int(a_f['steps']) / int(a_m['steps']) + int(sac_t['full-ds5-sac']['steps']) / int(sac_t['mbe-1p10-sac']['steps'])) / 2:.1f}")
-put("speedTimeMean", f"{(float(a_f['wall_s']) / float(a_m['wall_s']) + float(sac_c['full-ds5-sac']['wall_min_s']) / float(sac_c['mbe-1p10-sac']['wall_min_s'])) / 2:.1f}")
+put("speedTimeMean", f"{(_r1(a_f['wall_s']) / _r1(a_m['wall_s']) + _r1(sac_c['full-ds5-sac']['wall_min_s']) / _r1(sac_c['mbe-1p10-sac']['wall_min_s'])) / 2:.1f}")
 
 # tangent check (AK/tancheck/, rABC-8): relative difference between the code tangent and central finite
 # differences of the stress, lines "FDCHK group total ... rel_to_total=<x>"; largest over every line of the
@@ -837,6 +844,41 @@ _e = math.floor(math.log10(_x)); _m = math.ceil(round(_x / 10 ** _e, 9))
 if _m == 10:
     _m, _e = 1, _e + 1
 put("meshAxLamr", f"{_m * 10 ** _e:.{max(0, -_e)}f}")
+# circumferential refinement of the Figure 4 lesions (AK/s1/mesh-study2/th2 against gate, read as th2_table.py:
+# J over the elements at t = 11, apex radius ratio = max over the inner-wall nodes at z = 7.5 of r(t = 11)/r(t = 1));
+# round R2T, 2026-10-11
+def _rd_th(f):
+    out, tt = {}, None
+    for l in open(f):
+        m = re.match(r"\*Time\s*=\s*([\d.eE+-]+)", l)
+        if m:
+            tt = float(m.group(1)); out[tt] = []; continue
+        if l[0].isdigit():
+            out[tt].append([float(v) for v in l.split(",")])
+    return {k: np.array(v) for k, v in out.items()}
+_thJ, _thR = [], []
+for c in _cases:
+    _row = []
+    for d in ("gate", "th2"):
+        _Jt = _rd_th(os.path.join(S1, "mesh-study2", d, f"{c}-ALL.txt"))[11.0][:, 1]
+        _X = _rd_th(os.path.join(S1, "mesh-study2", d, f"{c}-INNER.txt"))
+        _k = np.abs(_X[1.0][:, 3] - 7.5) < 1e-6
+        _row.append((_Jt.max(), (np.hypot(_X[11.0][_k, 1], _X[11.0][_k, 2]) / np.hypot(_X[1.0][_k, 1], _X[1.0][_k, 2])).max()))
+    _thJ.append(abs(100 * (_row[1][0] / _row[0][0] - 1)))
+    _thR.append(abs(100 * (_row[1][1] / _row[0][1] - 1)))
+put("meshThJmax", f"{max(_thJ):.2f}")
+_x = max(_thR)                                             # bound, rounded UP to one significant digit ("less than")
+_e = math.floor(math.log10(_x)); _m = math.ceil(round(_x / 10 ** _e, 9))
+if _m == 10:
+    _m, _e = 1, _e + 1
+put("meshThLamr", f"{_m * 10 ** _e:.{max(0, -_e)}f}")
+# rate comparison with the baseline mass fractions, s_load = 100 d (AK/s1/alp2/frac-test, A10/A2): apex J of the
+# rate-dependent (sp100) and equilibrated (mbe) computations, last row, column 5; round R2T, 2026-10-11
+def _lastJ(f):
+    return float([l for l in open(os.path.join(S1, "alp2", "frac-test", f)) if l[0].isdigit()][-1].split(",")[4])
+_fa, _fb = _lastJ("elem-axisym-sp100.txt"), _lastJ("elem-axisym-mbe.txt")
+assert abs(_fa - _fb) < 1e-5, (_fa, _fb)
+put("fracTestJ", f"{_fa:.3f}")
 for col, name in (("Jmax", "segJmax"), ("apex_ratio", "segLamr"), ("Jmin", "segJmin")):
     v = _rel(col, "L30")
     put(f"{name}Lo", f"{min(v):.0f}")
@@ -1162,12 +1204,65 @@ _all = _fkg_blocks(os.path.join(_FK, "a", "matrix-fus-el-ALL.txt"))
 assert abs(_all[-1][0] - _ea[-1][0]) < 1e-9
 _row = _all[-1][1][_all[-1][1][:, 1].argmax()]
 _zmax = np.mean([_nod[n][2] for n in _els[int(_row[0])][:8]])
-put("fkgFailS", f"{_ea[-1][0]:.0f}")
+put("fkgFailS", f"{_ea[-1][0] - ONSET:.0f}")                      # G&R time s = t - 1 (SR3, 2026-10-09)
 put("fkgFailPct", f"{_ea[-1][0] - 1:.0f}")                            # degradation period: s = 1 to 101 days
 put("fkgApexJ", f"{_ja[-1]:.2f}")
 put("fkgOffApexJ", f"{_row[1]:.1f}")
 put("fkgOffApexDz", f"{abs(_zmax - _zc):.1f}")
 put("fkgUnitJ", f"{_eb[-1][1][0, 4]:.3f}")
+
+# referee runs of the third simulated review (2026-10-09): AK/s1/fullkg-sign/slow1000 (Table 1 G^e, s_load = 1000 d)
+# and AK/s1/alp2/bigstep (one backward-Euler step of 1000 d after Stage I, G^e = 1)
+_ls = open(os.path.join(_FK, "slow1000", "fus-el-full-s1000.log")).read()
+assert "E R R O R   T E R M I N A T I O N" in _ls and "<gr_end>1001.0</gr_end>" in open(os.path.join(_FK, "slow1000", "fus-el-full-s1000.feb")).read()
+_es = _fkg_blocks(os.path.join(_FK, "slow1000", "s1000-fus-el-eA.txt"))
+put("slowFailS", f"{_es[-1][0] - ONSET:.0f}")                        # G&R time s = t - 1
+put("slowFailDe", f"{20.0 * (_es[-1][0] - ONSET) / 1000.0:.1f}")      # d_e applied: 20 % ramped over s_load = 1000 d
+_B = os.path.join(S1, "alp2", "bigstep")
+assert "N O R M A L   T E R M I N A T I O N" in open(os.path.join(_B, "a_one1000.log")).read()
+_e1k = _fkg_blocks(os.path.join(_B, "elem-axisym-sp100_one1000.txt"))
+assert abs(_e1k[-1][0] - 1001.0) < 1e-9
+put("bigStepErr", f"{100 * abs(_e1k[-1][1][0, 4] / J_mbe_fus - 1):.2f}")
+
+# full-KG without degradation (DE0b, author 2026-10-09): Section 5.4 states only that the computation with the
+# Table 1 G^e departs from the original homeostatic state (AK/s1/fullkg-sign/de0, ERROR) and that with G^e = 1 it
+# stays there (de0-cause/Ge1: spread of J over the elements below 1e-10 up to t = 30). No macro; see RESULT.md
+_DC = os.path.join(_FK, "de0-cause")
+assert "E R R O R   T E R M I N A T I O N" in open(os.path.join(_FK, "de0", "de0.log")).read()
+assert "<Ge_t>1.9</Ge_t>" in open(os.path.join(_FK, "de0", "de0.feb")).read() and "<mu_in>1.0</mu_in>" in open(os.path.join(_FK, "de0", "de0.feb")).read()
+assert "N O R M A L   T E R M I N A T I O N" in open(os.path.join(_DC, "Ge1", "de0.log")).read()
+assert "<Ge_t>1.0</Ge_t>" in open(os.path.join(_DC, "Ge1", "de0.feb")).read()
+_sge = [(t_, b_[:, 1].max() - b_[:, 1].min()) for t_, b_ in _fkg_blocks(os.path.join(_DC, "Ge1", "de0-ALL.txt")) if len(b_)]
+assert abs(_sge[-1][0] - 30.0) < 1e-9 and all(s_ < 1e-10 for _, s_ in _sge)
+
+# single backward-Euler step after Stage I (Section 7.4; round BS, 2026-10-12): rate comparison (AK/s1/alp2/bigstep,
+# G^e = 1) with steps of 1000 d and 100 d, and the fusiform lesion of Figure 4(a) (AK/s1/fullkg-sign/bigstepT1,
+# Table 1 G^e): 1000 d converges, 100 d fails. Newton iterations of the step counted in the FEBio log.
+def _newton_at(log, t):
+    """Newton iterations of the step that ends at time t (max_retries 0: one attempt per step)."""
+    return sum(abs(float(x) - t) < 1e-9 for x in re.findall(r"Nonlinear solution status: time=\s*([\d.eE+-]+)", open(log).read()))
+for _d, _ds in (("a_one100", "100.0"), ("a_one1000", "1000.0")):
+    _f = open(os.path.join(_B, f"{_d}.feb")).read()
+    assert all(s in _f for s in (f"<step_size>{_ds}</step_size>", "<Ge_t>1.</Ge_t>", "<MBE>0</MBE>", "<k_parameter>0.1</k_parameter>"))
+assert "N O R M A L   T E R M I N A T I O N" in open(os.path.join(_B, "a_one100.log")).read()
+_e100 = _fkg_blocks(os.path.join(_B, "elem-axisym-sp100_one100.txt"))
+assert abs(_e100[-1][0] - 101.0) < 1e-9
+put("bigStepHundErr", f"{100 * abs(_e100[-1][1][0, 4] / J_mbe_fus - 1):.2f}")
+put("bigStepNewton", WORDS[_newton_at(os.path.join(_B, "a_one1000.log"), 1001.0)])
+put("bigStepHundNewton", WORDS[_newton_at(os.path.join(_B, "a_one100.log"), 101.0)])
+_BT = os.path.join(_FK, "bigstepT1")
+for _d, _ds in (("one100", "100.0"), ("one1000", "1000.0")):
+    _f = open(os.path.join(_BT, f"{_d}.feb")).read()
+    assert all(s in _f for s in (f"<step_size>{_ds}</step_size>", "<Ge_t>1.9</Ge_t>", "<Ge_z>1.62</Ge_z>", "<f_e>.34</f_e>",
+                                 "<f_c>.33</f_c>", "<mu_in>0.8</mu_in>", "<cc_in>1.0</cc_in>", "<MBE>0</MBE>", "<k_parameter>0.1</k_parameter>"))
+assert "E R R O R   T E R M I N A T I O N" in open(os.path.join(_BT, "one100.log")).read()
+assert "N O R M A L   T E R M I N A T I O N" in open(os.path.join(_BT, "one1000.log")).read()
+_t1k = _fkg_blocks(os.path.join(_BT, "one1000-eA.txt"))
+_mfa = _fkg_blocks(os.path.join(S1, "param-x", "matrix-fus-el-eA.txt"))      # MBE-KG, Figure 4(a), apex element 10
+assert abs(_t1k[-1][0] - 1001.0) < 1e-9 and abs(_mfa[-1][0] - 11.0) < 1e-9
+assert _t1k[-1][1][0, 0] == 10 and _mfa[-1][1][0, 0] == 10
+put("bigStepFigErr", f"{100 * abs(_t1k[-1][1][0, 4] / _mfa[-1][1][0, 4] - 1):.2f}")
+put("bigStepFigNewton", WORDS[_newton_at(os.path.join(_BT, "one1000.log"), 1001.0)])
 
 # ======================================================================== output
 _bad = sorted(f for f in OUTSIDE_S1 if not f.startswith(S1_KEEP))

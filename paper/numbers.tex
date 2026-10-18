@@ -7,6 +7,12 @@
 \newcommand{\aneuSzzo}{250}
 \newcommand{\aneuWo}{0.04}
 \newcommand{\aneuWzero}{0.04}
+\newcommand{\bigStepErr}{0.06}
+\newcommand{\bigStepFigErr}{0.91}
+\newcommand{\bigStepFigNewton}{five}
+\newcommand{\bigStepHundErr}{0.54}
+\newcommand{\bigStepHundNewton}{three}
+\newcommand{\bigStepNewton}{three}
 \newcommand{\convAneuRows}{Iteration 0 & 2.42E+00 & 4.04E-03 &  & 1.34E+01 & 2.79E-03 &  & 1.76E+04 & 3.72E+01 & \\
 Iteration 1 & 2.58E-04 & 3.33E-05 &  & 5.21E-06 & 1.50E-07 &  & 1.74E+09 & 1.22E+03 & \\
 Iteration 2 & 1.82E-12 & 1.72E-11 &  & 5.14E-14 & 1.49E-14 &  & 1.85E+06 & 2.14E+01 & \\
@@ -80,10 +86,11 @@ Iteration 5 & -- & -- &  & -- & -- &  & 1.04E-17 & 2.94E-20 & \\}
 \newcommand{\fieldWhom}{68}
 \newcommand{\fkgApexJ}{0.28}
 \newcommand{\fkgFailPct}{34}
-\newcommand{\fkgFailS}{35}
+\newcommand{\fkgFailS}{34}
 \newcommand{\fkgOffApexDz}{4.4}
 \newcommand{\fkgOffApexJ}{5.8}
 \newcommand{\fkgUnitJ}{1.017}
+\newcommand{\fracTestJ}{1.193}
 \newcommand{\itPerStepFull}{3.0}
 \newcommand{\itPerStepMbe}{3.4}
 \newcommand{\kJConstraint}{10^{-4}}
@@ -158,6 +165,8 @@ Iteration 5 & -- & -- &  & -- & -- &  & 1.04E-17 & 2.94E-20 & \\}
 \newcommand{\meshSacOne}{1.955}
 \newcommand{\meshSacThree}{1.975}
 \newcommand{\meshSacTwo}{1.970}
+\newcommand{\meshThJmax}{0.09}
+\newcommand{\meshThLamr}{0.02}
 \newcommand{\newtonAneuFull}{89}
 \newcommand{\newtonAneuFullFine}{412}
 \newcommand{\newtonAneuHyp}{7}
@@ -287,6 +296,8 @@ Iteration 5 & -- & -- &  & -- & -- &  & 1.04E-17 & 2.94E-20 & \\}
 \newcommand{\segJminLo}{13}
 \newcommand{\segLamrHi}{10}
 \newcommand{\segLamrLo}{5}
+\newcommand{\slowFailDe}{0.8}
+\newcommand{\slowFailS}{40}
 \newcommand{\speedNewton}{2.4}
 \newcommand{\speedNewtonSac}{2.4}
 \newcommand{\speedSteps}{2.7}
@@ -294,7 +305,7 @@ Iteration 5 & -- & -- &  & -- & -- &  & 1.04E-17 & 2.94E-20 & \\}
 \newcommand{\speedStepsSac}{2.6}
 \newcommand{\speedTime}{2.5}
 \newcommand{\speedTimeMean}{2.5}
-\newcommand{\speedTimeSac}{2.5}
+\newcommand{\speedTimeSac}{2.4}
 \newcommand{\stepsAneuFull}{30}
 \newcommand{\stepsAneuFullFine}{146}
 \newcommand{\stepsAneuHyp}{1}
@@ -313,17 +324,17 @@ Iteration 5 & -- & -- &  & -- & -- &  & 1.04E-17 & 2.94E-20 & \\}
 \newcommand{\szRatioMax}{0.20}
 \newcommand{\szRatioMin}{0.067}
 \newcommand{\termJ}{1.1271}
-\newcommand{\termMbeFull}{0.0002}
+\newcommand{\termMbeFull}{0.001}
 \newcommand{\termMbeManySteps}{522}
 \newcommand{\termMbeSteps}{0.001}
 \newcommand{\termSacJ}{1.0774}
 \newcommand{\termSacMbeFull}{0.0013}
-\newcommand{\timeAneuFull}{43}
-\newcommand{\timeAneuFullFine}{195}
-\newcommand{\timeAneuHyp}{3}
-\newcommand{\timeAneuMbe}{17}
-\newcommand{\timeSacFull}{41}
-\newcommand{\timeSacMbe}{17}
+\newcommand{\timeAneuFull}{42.6}
+\newcommand{\timeAneuFullFine}{195.4}
+\newcommand{\timeAneuHyp}{3.3}
+\newcommand{\timeAneuMbe}{16.8}
+\newcommand{\timeSacFull}{41.3}
+\newcommand{\timeSacMbe}{16.9}
 \newcommand{\timeUniFull}{0.113}
 \newcommand{\timeUniHyp}{0.066}
 \newcommand{\timeUniMbe}{0.061}

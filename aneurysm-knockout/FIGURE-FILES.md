@@ -60,9 +60,15 @@ select the profiles of the article from it.
 | volumetric penalty `k_J` | `alp1/uniax-lo1/kJ-study/*.feb`, `kJ-study/aneu_kJ1e{3..8}.feb` | `alp1/uniax-lo1/kJ-study/uniax_kJ*_elem1_MBE.txt`, `kJ-study/aneu_kJ*_matrix-fus-el-{eA,eB}.txt` | none |
 | radial mesh refinement | `mesh-study/{fus,sac}_nr{1,2,3}.feb` | `mesh-study/{fus,sac}_nr*_matrix-*-el-ALL.txt` | none |
 | axial mesh refinement, segment length | `mesh-study2/{gate,z2,L30}/*.feb` | `mesh-study2/summary.csv` | `mesh-study2/gen.py`, `mesh-study2/run.sh`, `mesh-study2/summary.py` |
+| circumferential mesh refinement | `mesh-study2/th2/*.feb` (against `mesh-study2/gate/*.feb`) | `mesh-study2/{gate,th2}/*-{ALL,INNER}.txt` | `mesh-study2/gen_th2.py`, `mesh-study2/th2_table.py` |
 | lesions with equal losses | `severity-fig/lad-*.feb` | `severity-fig/lad-*-{ALL,NODES}.txt` | `severity-fig/make_ladder_csv.py` |
 | uniaxial homeostasis, semi-analytical agreement | as for Figures 2 and 3 | same | `semi-analytical/uniax_4fib.py` |
 | field-map values | `param-x/matrix-*.feb` | `param-x/matrix-*-{ALL,NODES,eA,nA}.txt` | none |
+| rate comparison with the baseline mass fractions, `s_load` = 100 days | `alp2/frac-test/{mbe,full-sl100}.feb` | `alp2/frac-test/elem-axisym-{mbe,sp100}.txt` | none |
+| rate-dependent computation of the fusiform lesion of Figure 4(a), `s_load` = 100 days | `fullkg-sign/a/fus-el-full.feb` (deposition stretches of Table 1), `fullkg-sign/b/fus-el-full.feb` (unit elastin deposition stretches) | `fullkg-sign/{a,b}/fus-el-full.log`, `fullkg-sign/{a,b}/matrix-fus-el-eA.txt`, `fullkg-sign/a/matrix-fus-el-ALL.txt` | `fullkg-sign/setup_run.py` |
+| rate-dependent computation of the fusiform lesion of Figure 4(a), `s_load` = 1000 days | `fullkg-sign/slow1000/fus-el-full-s1000.feb` | `fullkg-sign/slow1000/fus-el-full-s1000.log`, `fullkg-sign/slow1000/s1000-fus-el-eA.txt` | none |
+| rate-dependent computation without degradation | `fullkg-sign/de0/de0.feb` (deposition stretches of Table 1), `fullkg-sign/de0-cause/Ge1/de0.feb` (unit deposition stretches) | `fullkg-sign/de0/de0.log`, `fullkg-sign/de0-cause/Ge1/de0.log`, `fullkg-sign/de0-cause/Ge1/de0-ALL.txt` | none |
+| single backward-Euler step after Stage I | `alp2/bigstep/a_one{1000,100}.feb` (fusiform rate comparison), `fullkg-sign/bigstepT1/one{1000,100}.feb` (lesion of Figure 4(a)); the number is the step length in days | `alp2/bigstep/a_one*.log`, `alp2/bigstep/elem-axisym-sp100_one*.txt`, `fullkg-sign/bigstepT1/one*.log`, `fullkg-sign/bigstepT1/one1000-eA.txt` | none |
 | tangent check against central finite differences | `aneurysm-knockout/tancheck/*/*.feb` (`fd_check` = 1) | `aneurysm-knockout/tancheck/*/*.log` | `aneurysm-knockout/tancheck/setup.py`, `aneurysm-knockout/tancheck/setup_r8.py` |
 
 `paper/make_numbers.py` reads the result files listed in `paper/numbers-inputs.txt`
