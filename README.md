@@ -2,7 +2,7 @@
 
 Source code, finite-element inputs, results and post-processing scripts for
 
-> A. Bezmalinovic, C. García-Herrera, D. Celentano, M. Latorre.
+> A. Bezmalinovic, C. García-Herrera, D. Celentano.
 > *A mechanobiologically-equilibrated finite kinematic growth model for soft-tissues:
 > formulation and fast, rate-independent, finite-element implementation.*
 
