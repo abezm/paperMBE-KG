@@ -1,27 +1,25 @@
 """Single generator of every result quoted in main.tex. Writes numbers.tex and the bodies
 of the two convergence tables (macros convUniRows and convAneuRows).
 
-Sources, all under ../aneurysm-knockout/ (AK). Since 2026-10-02 (night), every run that enters
-Stage II without the fibre-angle option is read from AK/alp1/ (A1): the same input files with
-<alp_update>1</alp_update>, run with the corrected code (~/FEBio-alpcheck: angle from F Fo^-1, two
-tangent terms), in folders that mirror the ones listed here; runs carried to 5 s_load in */to5/, timed
-runs ending at the stopping time in A1/speedup-fair/stop/ and A1/uniax-lo1/timing-stop/, the uniaxial
-plot series in A1/uniax-lo1/prep/. The lesion fields, the sweep, k_J and mesh of the lesions and the
-passive runs (no Stage II) are read from their original folders.
-  AK/uniax-lo1/              uniaxial coupon, runs with lo_opt = 1 (the passive runs are read
-                             from AK/uniax-fractions/): FEBio logs (elem1_*, node7_*), the plot-ready
-                             series {MBE,sp1,sp10,sp100}_c.txt (FE) and _a.txt
-                             (semi-analytical, ../semi-analytical/uniax_4fib.py), ds-study/
-  AK/kJ-study/               volumetric-penalty sweep
-  AK/mesh-study/             radial mesh refinement of the two lesions
-  AK/param-x/                the four lesion fields (matrix-*), and the parametric sweep
-                             MASTER_PARAMETRIC_STUDY.csv
-  AK/full-KG/                rate comparison (MBE and full-KG), ds-aneu/, ds-study/
-  AK/timing/                 wall time, steps and Newton iterations, and the logs whose
-                             residuals fill the convergence tables (timing.py)
+Sources are under ../aneurysm-knockout/ (AK below). A path under AK is read from AK/s1/ when that
+copy exists (every run of the article: Stage I with F_g = 1); the few files read outside AK/s1/ are
+listed in S1_KEEP and checked at the end. A1 = AK/alp1/, A2 = AK/alp2/ (runs with the fibre-angle
+update, alp_update = 1).
+  A1/uniax-lo1/          uniaxial coupon (lo_opt = 1): FEBio logs, the plot series
+                         prep/{MBE,sp1,sp10,sp100}_{c,a}.txt (FE and semi-analytical), timing runs
+  AK/uniax-fractions/    passive coupon (no growth)
+  A1/full-KG/, A2/       rate comparison: lesion fields, step-size study, timings, residuals
+  AK/kJ-study/           volumetric-penalty sweep
+  AK/mesh-study/, AK/mesh-study2/
+                         radial mesh refinement; mesh and segment-length check of the Figure 4 lesions
+  AK/param-x/            the four lesion fields of Figure 4 and the parametric maps
+  AK/severity-fig/, AK/profile-fig/
+                         lesions of Figures 6-8
+  AK/fullkg-sign/        full-KG runs of the Figure 4(a) lesion
+  AK/tancheck/           tangent check against finite differences
 
-Every file opened for reading is written to numbers-inputs.txt, so that build.sh can
-refuse to compile when an input is newer than numbers.tex.
+Every file opened for reading is written to numbers-inputs.txt, so that a build can refuse to
+compile when an input is newer than numbers.tex.
 
 Run: python3 make_numbers.py
 """
@@ -37,9 +35,8 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(HERE, ".."))
 AK = os.path.join(ROOT, "aneurysm-knockout")
-# The uniaxial inputs are read from AK/uniax-lo1/ (runs with lo_opt = 1: fibre stress evaluated at
-# the original homeostatic state, the rule of the lesion runs; adopted by the author on
-# 2026-10-02). UNIAX_LO0=1 reads the earlier runs (lo_opt = 0, AK/uniax-fractions/) instead and
+# The uniaxial inputs are read from A1/uniax-lo1/ (runs with lo_opt = 1: fibre stress evaluated at
+# the original homeostatic state, the rule of the lesion runs). UNIAX_LO0=1 reads the earlier runs (lo_opt = 0, AK/uniax-fractions/) instead and
 # writes numbers.lo0.tex, leaving numbers.tex alone.
 LO1 = os.environ.get("UNIAX_LO0") != "1"
 MACROS = {}
@@ -91,7 +88,7 @@ def pct(x, d=1):
 
 
 def bound(x):
-    """Smallest of 0.001, 0.01, 0.1, 1 (in percent) above the fraction x, for 'less than'."""
+    """Smallest of 0.001, 0.01, 0.1, 1, 10 (in percent) above the fraction x, for 'less than'."""
     return next(f"{b:g}" for b in (0.001, 0.01, 0.1, 1.0, 10.0) if 100.0 * x < b)
 
 
@@ -205,7 +202,7 @@ def series(tag, kind):
 fe = {t: series(t, "c") for t in ("MBE", "sp1", "sp10", "sp100")}
 sa = {t: series(t, "a") for t in ("MBE", "sp1", "sp10", "sp100")}
 SLOAD = {"MBE": 10.0, "sp1": 1.0, "sp10": 10.0, "sp100": 100.0}
-# Section 6.1.1 (2026-10-03, asked by the session of the simulated review, sentence approved by the author): largest
+# Section 6.1.1: largest
 # axial Cauchy stress of the finite-element curve during the ramp, 0 <= s/s_load <= 1, over sigma_o, in %
 for _t, _n in (("sp1", "One"), ("sp10", "Ten"), ("sp100", "Hundred")):
     _r = fe[_t][fe[_t][:, 0] <= 1.0 + 1e-9]
@@ -455,7 +452,7 @@ put("aneuAo", f"{a_o:.3f}")
 put("aneuWo", f"{b_o - a_o:.2f}")
 # undeformed geometry of the mesh (the in-vivo geometry of [58]) and the size of F_o in the lesion material
 # (Table 1): every nodal radius changes by less than 1e-4 in Stage I, and the strain energy and J at the end of
-# Stage I are the same in all elements (Section 5.4; round rABC-6, marks 59-74)
+# Stage I are the same in all elements (Section 5.4)
 put("aneuAzero", f"{Rr.min():.3f}")
 put("aneuWzero", f"{Rr.max() - Rr.min():.2f}")
 # s1/ (2026-10-03): with Stage I as Section 5.1 the largest change is 1.07e-4 (it was below 1e-4 before);
@@ -547,7 +544,7 @@ for m, cfg in RATE.items():
     else:
         J_mbe_sac = Jm
 # elastin-only lesions in the rate-comparison material: alp1/ (cc_in 1.0), apex radius increase at the end;
-# Figure 4(a) and (c) for comparison (rABC-6 marks 77-78, last paragraph of Section 5.4)
+# Figure 4(a) and (c) for comparison (last paragraph of Section 5.4)
 for m, cfg in RATE.items():
     _e = rate_series(os.path.join(A1, "full-KG", cfg["mbe"][0]), os.path.join(A1, "full-KG", cfg["mbe"][1]), 1.0)
     put(f"rateEl{m}LamrPct", pct(_e["lr"][-1] - 1.0, 1))
@@ -619,7 +616,7 @@ for c, name in (("uniax-MBE", "UniMbe"), ("uniax-full", "UniFull"), ("uniax-HYP"
 # 130 days and the hyperelastic pressurization in one step, as in the two growth models)
 # A2/speedup-fair/stop/timing_stop.csv (2026-10-03): the full-KG runs end at the stopping time
 # s = 145 days (J at the apex changes by less than 1e-4 (J - 1) over the last s_load/20 = 5 days, after
-# the end of the load), with Delta s = 5 and 1 day, and mbe-1p10 timed in the same session;
+# the end of the load), with Delta s = 5 and 1 day, and mbe-1p10 timed in the same batch;
 # A2/speedup-fair/timing_fair2.csv gives the hyperelastic case and mbe-1p10-b (speed check)
 fair = {r["case"]: r for r in csv.DictReader(open(os.path.join(A2, "speedup-fair", "stop", "timing_stop.csv")))}
 fair2 = {r["case"]: r for r in csv.DictReader(open(os.path.join(A2, "speedup-fair", "timing_fair2.csv")))}
@@ -669,7 +666,7 @@ put("stopTol", "10^{-4}")
 put("stopAneu", f"{stop_aneu:.0f}")
 put("stopUni", f"{stop_uni:.1f}")
 # no wall-time ratio for the uniaxial test: with one element the fixed cost of a run dominates the
-# wall time (author, 2026-10-02); the text gives steps, Newton iterations and the two wall times
+# wall time; the text gives steps, Newton iterations and the two wall times
 
 BLOCK = re.compile(
     r"Nonlinear solution status: time=\s*([\d.eE+-]+).*?"
@@ -727,7 +724,7 @@ for name, v in zip(("UniMbe", "UniFull", "UniHyp", "AneuMbe", "AneuFull", "AneuH
                    it_u + it_a):
     put(f"repIt{name}", f"{v}")
 
-# saccular rate comparison (rABC-7, 2026-10-04): A2/speedup-fair-sac/, decks of setup_sac.py, the lesion of
+# saccular rate comparison: A2/speedup-fair-sac/, decks of setup_sac.py, the lesion of
 # Figure 8 (65 % loss of elastic-fiber integrity, 10 % loss of collagen cross-linking). Steps, Newton
 # iterations, apex J and residuals do not depend on the load of the machine; the wall times of that batch
 # are not used (the parametric maps were running: 1.8 s per iteration against 0.45 s in the fusiform runs)
@@ -736,11 +733,11 @@ sac_t = {r["case"]: r for r in csv.DictReader(open(os.path.join(SAC, "loaded", "
 for c, name in (("mbe-1p10-sac", "SacMbe"), ("full-ds5-sac", "SacFull")):
     put(f"steps{name}", sac_t[c]["steps"])
     put(f"newton{name}", sac_t[c]["newton"])
-# speed-up in steps and Newton iterations, rounded as speedSteps / speedNewton (rABC-8, paper-review session)
+# speed-up in steps and Newton iterations, rounded as speedSteps / speedNewton
 put("speedStepsSac", f"{int(sac_t['full-ds5-sac']['steps']) / int(sac_t['mbe-1p10-sac']['steps']):.1f}")
 put("speedNewtonSac", f"{int(sac_t['full-ds5-sac']['newton']) / int(sac_t['mbe-1p10-sac']['newton']):.1f}")
 # wall times of the saccular rate comparison from the batch run on the idle machine (clean/, 3 repetitions, one
-# thread; rABC-8, paper-review session), rounded as timeAneuMbe/Full and speedTime; steps and Newton iterations
+# thread), rounded as timeAneuMbe/Full and speedTime; steps and Newton iterations
 # must equal those of loaded/
 sac_c = {r["case"]: r for r in csv.DictReader(open(os.path.join(SAC, "clean", "timing_sac.csv")))}
 for c in ("mbe-1p10-sac", "full-ds5-sac"):
@@ -748,12 +745,12 @@ for c in ("mbe-1p10-sac", "full-ds5-sac"):
 put("timeSacMbe", f"{float(sac_c['mbe-1p10-sac']['wall_min_s']):.1f}")
 put("timeSacFull", f"{float(sac_c['full-ds5-sac']['wall_min_s']):.1f}")
 put("speedTimeSac", f"{_r1(sac_c['full-ds5-sac']['wall_min_s']) / _r1(sac_c['mbe-1p10-sac']['wall_min_s']):.1f}")
-# mean speed-up of the two lesions (abstract; rABC-8, paper-review session): mean of the unrounded step ratios and of
-# the ratios of the printed times (round R2T, 2026-10-11)
+# mean speed-up of the two lesions (abstract): mean of the unrounded step ratios and of
+# the ratios of the printed times
 put("speedStepsMean", f"{(int(a_f['steps']) / int(a_m['steps']) + int(sac_t['full-ds5-sac']['steps']) / int(sac_t['mbe-1p10-sac']['steps'])) / 2:.1f}")
 put("speedTimeMean", f"{(_r1(a_f['wall_s']) / _r1(a_m['wall_s']) + _r1(sac_c['full-ds5-sac']['wall_min_s']) / _r1(sac_c['mbe-1p10-sac']['wall_min_s'])) / 2:.1f}")
 
-# tangent check (AK/tancheck/, rABC-8): relative difference between the code tangent and central finite
+# tangent check (AK/tancheck/): relative difference between the code tangent and central finite
 # differences of the stress, lines "FDCHK group total ... rel_to_total=<x>"; largest over every line of the
 # uniaxial logs and of the lesion logs, rounded UP to one significant digit (the text says "below")
 def fd_max(logs):
@@ -795,7 +792,7 @@ def tex_sci(x):
 
 fr_sac, _ = representative(os.path.join(SAC, "loaded", "T-mbe-1p10-sac-r1.log"), 1.0, 2.0)
 put("convSacRes", ", ".join(tex_sci(x) for x in fr_sac))
-# saccular convergence table (rABC-8, paper-review session): the median-iteration step of the MBE-KG run over
+# saccular convergence table: the median-iteration step of the MBE-KG run over
 # (1, 2] and of the full-KG run over (1, 101], same cells as convAneuRows, two columns
 sac_cols = [representative(os.path.join(SAC, "loaded", "T-mbe-1p10-sac-r1.log"), 1.0, 2.0),
             representative(os.path.join(SAC, "loaded", "T-full-ds5-sac-r1.log"), 1.0, 101.0)]
@@ -813,7 +810,7 @@ put("repItSacFull", f"{len(sac_cols[1][0]) - 1}")
 put("prefactor", rf"{float(MACROS['rateSvo']) * J_mbe_fus / (0.1 * 0.001):.1e}"
     .replace("e+0", r"\times10^{") + "}")
 
-# axial extent of the defect relative to the segment length (rABC-8, paper-review session): l_0 = axial length
+# axial extent of the defect relative to the segment length: l_0 = axial length
 # of the mesh (max z - min z); s_z of the Figure 4 lesion decks, and the s_z range of the paper profiles of the
 # maps (PAPER_PROFILES of AK/s1/param-x/run_maps.py, the nu = 5 sweep), two significant digits
 def sig2(x):
@@ -830,8 +827,8 @@ assert len(_sz) == 1 and len(_l0) == 1, (_sz, _l0)
 SZ_LES, L0 = _sz.pop(), _l0.pop()
 put("szRatioLesion", sig2(SZ_LES / L0))
 
-# mesh and segment-length check of the Figure 4 lesions (AK/s1/mesh-study2/summary.csv, written by summary.py;
-# point 16 of the simulated review, paper-review session, 4 Oct 2026). Meshes: gate (the original mesh rebuilt),
+# mesh and segment-length check of the Figure 4 lesions (AK/s1/mesh-study2/summary.csv, written by summary.py).
+# Meshes: gate (the original mesh rebuilt),
 # z2 (axial elements halved), L30 (segment length 2 l_0). Changes in % relative to gate, per lesion.
 _ms = {(r["case"], r["mesh"]): r for r in csv.DictReader(open(os.path.join(S1, "mesh-study2", "summary.csv")))}
 _cases = sorted({c for c, m in _ms})
@@ -894,8 +891,8 @@ put("szRatioMin", sig2(min(_szs) / L0))
 put("szRatioMax", sig2(max(_szs) / L0))
 
 # ============================================================== parametric sweep
-# the 11 profiles shown in the paper (Online Resource 1, maps; AK/s1/param-x, Stage I of Section 5.1, author
-# 4 Oct 2026): s_z = 1.0, 1.4, 1.8, 2.2, 2.6, 3.0 mm at nu = 5 and nu = 1..6 at s_z = 3 mm, (5, 3) shared
+# the 11 profiles shown in the paper (Online Resource 1, maps; AK/s1/param-x, Stage I of Section 5.1):
+# s_z = 1.0, 1.4, 1.8, 2.2, 2.6, 3.0 mm at nu = 5 and nu = 1..6 at s_z = 3 mm, (5, 3) shared
 # (PAPER_PROFILES of run_maps.py; the computed s_z = 2.8 map is not shown).
 # The s1 MASTER csv also holds the same s_z sweep at nu = 3 (kept as data, not shown): it is excluded.
 # BASE = the profile of latorre2020numerical and of the lesions of Figures 4-8 (nu = 5, s_z = 3 mm).
@@ -971,7 +968,6 @@ for typ in ("axis", "asym"):
     ratios.append(c[2] / c[1])
 put("parSensRatio", f"{max(ratios):.1f}")
 # the same fit for each paper profile separately: range over the 12 profiles of (dJ/dd_c)/(dJ/dd_e)
-# (point 9 of the simulated review, paper-review session, 4 Oct 2026)
 for typ, name in (("axis", "Fus"), ("asym", "Sac")):
     rp = []
     for prof in sorted(PAPER):
@@ -1117,7 +1113,7 @@ assert latF[(32, 0)]["converged"] and latF[(32, 9)]["converged"]
 assert not latF[(62, 0)]["converged"] and not latF[(62, 23)]["converged"]
 
 # ======================================================================== Figure 6 (severity ladder, d_e = d_c)
-# rABC-6 (2026-10-03, proposal of review/rabc6_proposals_fable.md): the eight decks drawn by
+# the eight decks drawn by
 # AK/severity-fig/render_ladder_matrix.py, read as the Figure 4 fields: J over the elements (*-ALL.txt),
 # apex radius ratio at node 20 (*-NODES.txt); checked against ladder.csv. The lad* macros above (criterion
 # J <= 4, ladder-numbers.json) are not used in the text.
@@ -1149,7 +1145,7 @@ assert latF[(32, 9)]["J_apex"] > 4 > latF[(32, 0)]["J_apex"]
 assert max(c["J_apex"] for c in latS.values()) < 4
 
 # ======================================================================== Figures 7 and 8 (profiles at fixed loss)
-# 2026-10-04 (author): the losses of Figure 6(d) and (h), d_e = d_c = 20 % (fusiform) and 37 % (saccular), with
+# the losses of Figure 6(d) and (h), d_e = d_c = 20 % (fusiform) and 37 % (saccular), with
 # s_z = 1.2, 1.8, 2.4, 3.0 mm at nu = 5 (Figure 7) and nu = 1, 3, 5, 7 at s_z = 3 mm (Figure 8); decks in
 # AK/profile-fig (make_decks.py), the nu = 5, s_z = 3 mm panels are the Figure 6 runs. Apex radius ratio at node 20,
 # rounded from the full value (2.3053 -> 2.31).
@@ -1178,7 +1174,7 @@ for name in ("Fus", "Sac"):
             assert lam[-1] > LAM_MAX and all(v <= LAM_MAX for v in lam[:-1])
 
 # ============================================================ rate-dependent lesion (Section 5.3)
-# AK/s1/fullkg-sign (author 5 Oct 2026): full-KG of the fusiform lesion of Figure 4(a), s_load = 100 days, from the MBE deck
+# AK/s1/fullkg-sign: full-KG of the fusiform lesion of Figure 4(a), s_load = 100 days, from the MBE deck
 # param-x/matrix-fus-el.feb with MBE = 0 (setup_run.py). a: deposition stretches of Table 2; b: unit elastin deposition
 # stretches. Element 10 is at the apex (z = 7.2 mm), node 20 likewise; -ALL.txt holds J of every element.
 def _fkg_blocks(path):
@@ -1211,7 +1207,7 @@ put("fkgOffApexJ", f"{_row[1]:.1f}")
 put("fkgOffApexDz", f"{abs(_zmax - _zc):.1f}")
 put("fkgUnitJ", f"{_eb[-1][1][0, 4]:.3f}")
 
-# referee runs of the third simulated review (2026-10-09): AK/s1/fullkg-sign/slow1000 (Table 1 G^e, s_load = 1000 d)
+# AK/s1/fullkg-sign/slow1000 (Table 1 G^e, s_load = 1000 d)
 # and AK/s1/alp2/bigstep (one backward-Euler step of 1000 d after Stage I, G^e = 1)
 _ls = open(os.path.join(_FK, "slow1000", "fus-el-full-s1000.log")).read()
 assert "E R R O R   T E R M I N A T I O N" in _ls and "<gr_end>1001.0</gr_end>" in open(os.path.join(_FK, "slow1000", "fus-el-full-s1000.feb")).read()
@@ -1224,9 +1220,9 @@ _e1k = _fkg_blocks(os.path.join(_B, "elem-axisym-sp100_one1000.txt"))
 assert abs(_e1k[-1][0] - 1001.0) < 1e-9
 put("bigStepErr", f"{100 * abs(_e1k[-1][1][0, 4] / J_mbe_fus - 1):.2f}")
 
-# full-KG without degradation (DE0b, author 2026-10-09): Section 5.4 states only that the computation with the
+# full-KG without degradation: Section 5.4 states only that the computation with the
 # Table 1 G^e departs from the original homeostatic state (AK/s1/fullkg-sign/de0, ERROR) and that with G^e = 1 it
-# stays there (de0-cause/Ge1: spread of J over the elements below 1e-10 up to t = 30). No macro; see RESULT.md
+# stays there (de0-cause/Ge1: spread of J over the elements below 1e-10 up to t = 30). No macro
 _DC = os.path.join(_FK, "de0-cause")
 assert "E R R O R   T E R M I N A T I O N" in open(os.path.join(_FK, "de0", "de0.log")).read()
 assert "<Ge_t>1.9</Ge_t>" in open(os.path.join(_FK, "de0", "de0.feb")).read() and "<mu_in>1.0</mu_in>" in open(os.path.join(_FK, "de0", "de0.feb")).read()

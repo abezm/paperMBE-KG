@@ -24,8 +24,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-
-
 #pragma once
 #include "FEElasticMaterial.h"
 
@@ -56,12 +54,6 @@ public:
 	mat3ds	m_Se;	//!< elastic PK2 stress
 	mat3ds	m_Sep;	//!< elastic 2nd PK stress at previous time
 
-	//mat3ds	m_H[MAX_TERMS];		//!< internal variables
-	//mat3ds	m_Hp[MAX_TERMS];	//!< internal variables at previous timestep
-
-    //double  m_alpha[MAX_TERMS];     //!< exponent of right-stretch tensor in series spring
-    //double  m_alphap[MAX_TERMS];    //!< alpha at previous time step
-    
 	double	m_sed;	//!< elastic strain energy density
 	double	m_sedp;	//!< elastic strain energy density at previous time
 	
@@ -73,23 +65,19 @@ public:
 	
 	double	m_svo;			//!< volumetric stress at o
 	
-	mat3d m_Fo;
+	mat3d m_Fo;		//!< F at the end of Stage I (original homeostatic state)
 	
-	double  m_elas_dmg;
-	double  m_coll_dmg;
+	double  m_elas_dmg;	//!< degraded c_e / input c_e
+	double  m_coll_dmg;	//!< degraded c_c / input c_c
 	
-	double m_Wt;
+	double m_Wt;		//!< m_sed / J
 };
 
-
 //-----------------------------------------------------------------------------
-//! This class implements a large deformation visco-elastic material
-//
+//! Kinematic growth material: equilibrated (MBE) or rate-dependent isotropic growth with degradation
 class FEKinematicGrowthZ :	public FEElasticMaterial
 {
 public:
-	// NOTE: make sure that this parameter is the 
-	//       same as the MAX_TERMS in the FEKinematicMaterialPointZ class
 	enum { MAX_TERMS = FEKinematicMaterialPointZ::MAX_TERMS };
 
 public:
@@ -114,10 +102,7 @@ public:
 
 	//! strain energy density
 	double StrainEnergyDensity(FEMaterialPoint& pt) override;
-    
-    //! calculate exponent of right-stretch tensor in series spring
-    //bool SeriesStretchExponent(FEMaterialPoint& pt);
-    
+
     // returns a pointer to a new material point object
 	FEMaterialPointData* CreateMaterialPointData() override;
 	
@@ -126,13 +111,10 @@ public:
 
 public: 
 	// material parameters
-	//double	m_g0;			//!< intitial visco-elastic coefficient
-	//double	m_g[MAX_TERMS];	//!< visco-elastic coefficients
-	//double	m_t[MAX_TERMS];	//!< relaxation times
-	double  m_kPar;		// GAIN*RATE parameter
-	double  m_sgrSta;		// initial G&R time
-	double  m_sgrEnd;		// final G&R time
-	double  m_kJ;
+	double  m_kPar;		// rate parameter K_sigma k
+	double  m_sgrSta;		// end of Stage I, start of G&R
+	double  m_sgrEnd;		// end of the degradation ramp
+	double  m_kJ;		// volumetric penalty of Stage I
 	bool    m_MBE_opt;		// option for MBE
 	bool    m_secant_tangent;  	// flag for using secant tangent calculation
 	bool	m_asym;		// type of aneurysm
@@ -150,18 +132,11 @@ public:
 	double  m_Gez;
 	bool    m_lo_opt;		// option for stretch calc (1: Fe = Fo)
 	bool    m_writeRes;		// option for printing
-	//double m_Get;
-	//double m_Gez;
-	//
 	double m_mu;			// shear modulus
 	double m_cm;
 	double m_dm;
 	double m_cc;
 	double m_dc;
-	//double m_cct;
-	//double m_dct;
-	//double m_ccz;
-	//double m_dcz;
 	
 	double m_alpha;
 	
@@ -171,18 +146,11 @@ public:
 	double m_phieo; 
 	double m_phico; 
 	
-	double m_z_center;	// cylinder half length
-	double m_z_spread;
-	double m_nuz;		// axisymmetric deviation parameter
-	double m_nut;		// asymmetric deviation parameter
-	double m_pif;		// asymmetric angle (factor of PI)
-	
-	// Active stress
-	//double m_Tmax;
-	//double m_lamM;
-	//double m_lam0;
-	//double m_cb;
-	
+	double m_z_center;	// axial centre of the degradation profile
+	double m_z_spread;	// axial spread of the degradation profile
+	double m_nuz;		// axial exponent of the degradation profile
+	double m_nut;		// circumferential exponent of the degradation profile
+	double m_pif;		// circumferential spread pi/t_pif
 
 private:
 	FEElasticMaterial*	m_Base;	//!< pointer to elastic solid material

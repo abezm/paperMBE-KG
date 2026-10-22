@@ -1,21 +1,20 @@
 #!/usr/bin/env python3
-"""Figure 3 over the FULL load range F_o <= F <= 8 F_o (trial variants).
+"""Figure 3: uniaxial coupon over the load range F_o <= F <= 8 F_o (red = MBE-KG,
+black = hyperelastic, line = finite element, open circles = closed form J = (F/F_o)^{3/2}).
+Usage:
 
-Same data and house style as make_fig_homeostasis.py (red = MBE-KG, black = hyperelastic,
-line = finite element, open circles = closed form J = (F/F_o)^{3/2}), but without the
-cut at 3 F_o. Usage:
+    python3 make_fig_homeostasis_s1.py [A|B|C|D] [--overwrite-v2]
 
-    python3 make_fig_homeostasis_full.py A|B|C|D
-
-  A  linear axes everywhere.
+  A  linear axes everywhere (default; the figure of the paper).
   B  log F/F_o in all panels; log sigma in (a); log-log in (c), where the closed form is
      a straight line of slope 3/2; linear lambda in (b).
   C  as B, with the part of the equilibrated curve beyond J = 4 (F/F_o > 4^{2/3}) in grey.
   D  as B, with the three stretch ratios lambda_i/lambda_oi of both responses in (b).
 
-v2: writes MBE_KG_model_ver2/uniax-mbe-homeostasis-full-v2.pdf and a PNG next to this script
-(axis limits on labelled ticks; refuses to overwrite unless --overwrite-v2).
-Reads node7_{MBE8,PASS8}.txt (ux, uy, uz of node 7) and elem1_{MBE8,PASS8}.txt
+Writes uniax-mbe-homeostasis-s1.pdf into the manuscript folder and a PNG next to this script;
+refuses to overwrite either unless --overwrite-v2 is given.
+Reads node7_MBE8.txt and elem1_MBE8.txt from this folder and node7_PASS8.txt and elem1_PASS8.txt
+from ../../uniax-fractions/ (ux, uy, uz of node 7; sx, sy, sz, J, Fgxx of element 1),
 (sx, sy, sz, J, Fgxx), as make_numbers.py does: x = radial, y = circumferential,
 z = axial, lambda_i = 1 + u_i (one face of the unit cube fixed per direction).
 """
@@ -29,8 +28,6 @@ from matplotlib.ticker import (AutoMinorLocator, MaxNLocator, FormatStrFormatter
                                FixedLocator, NullFormatter, LogLocator, NullLocator)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = ("/tmp/claude-1000/-home-abez-Desktop-MBE-KG/"
-       "53a426e6-0a78-4495-bc49-7df6a13488f3/scratchpad/fig3")
 
 plt.rcParams.update({"font.size": 9, "axes.linewidth": 0.8,
                      "xtick.direction": "in", "ytick.direction": "in",
@@ -221,10 +218,7 @@ fig.legend(handles=h, loc="upper center", ncol=len(h), fontsize=8, frameon=False
            bbox_to_anchor=(0.5, 1.0))
 
 fig.tight_layout(rect=(0, 0, 1, 0.92))
-os.makedirs(OUT, exist_ok=True)
-# v2: manuscript PDF (new name, original untouched) + inspection PNG next to the script
-# alp1/ (2 Oct 2026): copy of ../../uniax-lo1/make_fig_homeostasis_full_v2.py; MBE8 from this folder (angle
-# updated), the hyperelastic run from ../../uniax-fractions/ (no Stage II); PDF written into the manuscript folder
+# manuscript PDF and an inspection PNG next to the script
 pdf = os.path.normpath(os.path.join(HERE, "..", "..", "..", "..", "paper", "uniax-mbe-homeostasis-s1.pdf"))
 png = os.path.join(HERE, "uniax-mbe-homeostasis-s1.png")
 for q in (pdf, png):

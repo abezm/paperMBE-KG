@@ -102,13 +102,13 @@ index b5a5971..b89b0cb 100644
      //! Calculates the inertial force vector for solid elements
      void ElementInertialForce(FESolidElement& el, vector<double>& fe);
 diff --git a/FEBioMech/FEKinematicGrowthZ.cpp b/FEBioMech/FEKinematicGrowthZ.cpp
-index 5b041bd..36eb4b3 100755
+index c72f3b3..2593d02 100755
 --- a/FEBioMech/FEKinematicGrowthZ.cpp
 +++ b/FEBioMech/FEKinematicGrowthZ.cpp
-@@ -68,6 +68,13 @@ BEGIN_FECORE_CLASS(FEKinematicGrowthZ, FEElasticMaterial)
- 	ADD_PARAMETER(m_hypSel, "hyperels_mod"); // 6. hyperelastic model option 
- 	ADD_PARAMETER(m_degr,   "ec_degrad"); // 7. properties are degraded w this option 
- 	ADD_PARAMETER(m_alpm,   "alp_update"); // 8. alpha is updated w this option 
+@@ -61,6 +61,13 @@ BEGIN_FECORE_CLASS(FEKinematicGrowthZ, FEElasticMaterial)
+ 	ADD_PARAMETER(m_hypSel, "hyperels_mod"); // 1: neo-Hooke, 2: St. Venant-Kirchhoff, 3: elastin + SMC + four collagen families
+ 	ADD_PARAMETER(m_degr,   "ec_degrad"); // 1: elastin and collagen degradation
+ 	ADD_PARAMETER(m_alpm,   "alp_update"); // 1: update of the diagonal fibre angle
 +
 +	// TANCHECK: finite-difference check of TangentMm (debug only)
 +	ADD_PARAMETER(m_fd_check, "fd_check");
@@ -118,8 +118,8 @@ index 5b041bd..36eb4b3 100755
 +	ADD_PARAMETER(m_fd_eps,   "fd_eps");
  	
  	// ############## secant tangent option ##############
- 	ADD_PARAMETER(m_secant_tangent, "secant_tangent");	// 8. secant tangent
-@@ -185,6 +192,10 @@ void FEKinematicMaterialPointZ::Serialize(DumpStream& ar)
+ 	ADD_PARAMETER(m_secant_tangent, "secant_tangent");
+@@ -170,6 +177,10 @@ void FEKinematicMaterialPointZ::Serialize(DumpStream& ar)
  FEKinematicGrowthZ::FEKinematicGrowthZ(FEModel* pfem) : FEElasticMaterial(pfem)
  {
  	m_Base = 0;
@@ -130,16 +130,16 @@ index 5b041bd..36eb4b3 100755
  }
  
  //-----------------------------------------------------------------------------
-@@ -459,6 +470,8 @@ mat3ds FEKinematicGrowthZ::Stress(FEMaterialPoint& mp)
- 		Nn = N[1]*sin(alpha)-N[2]*cos(alpha);	// idem for symmetric
- 		*/
-     	}
+@@ -314,6 +325,8 @@ mat3ds FEKinematicGrowthZ::Stress(FEMaterialPoint& mp)
+ 		alpha = atan(tan(alpha) * pow(lt / lz, aexp));
+     	
+ 	    	}
 +    	m_dbg_alpha_cur = alpha;			// TANCHECK
 +    	if (m_dbg_freeze) alpha = m_dbg_alpha;	// TANCHECK: frozen fibre angle
      	
      	vec3d Np = Nt * sin(alpha) + Nz * cos(alpha);
      	vec3d Nn = Nt * sin(alpha) - Nz * cos(alpha);
-@@ -666,6 +679,7 @@ mat3ds FEKinematicGrowthZ::Stress(FEMaterialPoint& mp)
+@@ -433,6 +446,7 @@ mat3ds FEKinematicGrowthZ::Stress(FEMaterialPoint& mp)
  	    	
  	    	// store Fo
  	    	pt.m_Fo = F;
@@ -147,16 +147,16 @@ index 5b041bd..36eb4b3 100755
      		
      	}
      	else {
-@@ -683,6 +697,8 @@ mat3ds FEKinematicGrowthZ::Stress(FEMaterialPoint& mp)
+@@ -449,6 +463,8 @@ mat3ds FEKinematicGrowthZ::Stress(FEMaterialPoint& mp)
  		
  	    	// total PK-2 stress, S_n+1
  	    	S = Sx - J*p*Ci;   
 +	    	m_dbg_S = S; m_dbg_Sx = Sx; m_dbg_svx = svx; m_dbg_p = p; m_dbg_stage = 2;	// TANCHECK
 +	    	m_dbg_palg = (m_MBE_opt == 0 ? -svo*log(J/Jp)/(m_kPar*dt) : 0.0);	// TANCHECK
  	    	
- 	    	// prints stuff
- 		//int m_writeRes = 0;
-@@ -1249,6 +1265,7 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
+ 	    	// debug output (pr_opt = 1)
+ 		if (m_writeRes) {
+@@ -805,6 +821,7 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
  	    	mat3ds FSeFt = (F*Se*F.transpose()).sym();
  	    	mat3ds Iden(1.0, 1.0, 1.0, 0.0, 0.0, 0.0);
  	    	c = J*ce + dyad1mm(FSeFt, Iden) + cp + calph;
@@ -164,15 +164,15 @@ index 5b041bd..36eb4b3 100755
  	    	
  	    	// total PK-2 stress, S_n+1 / only to print
  	    	S = J*Se + Ci*lm*log(Jdep*J);	// Stage I: S^x = J S_e, since F_g = 1	
-@@ -1298,6 +1315,7 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
+@@ -847,6 +864,7 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
  			
  		// total spatial tangent, c_n+1
  		c = cx + cp + cpAl + calph;	// includes the variation of alpha
 +		m_dbg_cx = cx; m_dbg_cp = cp; m_dbg_cpAl = cpAl; m_dbg_calph = calph;	// TANCHECK
  	}
- 	    	
- 	//feLog("mu/cc = %f\t%f\n",mu,cc);
-@@ -1331,6 +1349,10 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
+ 
+ 	// debug output (pr_opt = 1)
+@@ -872,6 +890,10 @@ tens4dmm FEKinematicGrowthZ::TangentMm(FEMaterialPoint& mp)
      		c(1,2,0,0),c(1,2,1,1),c(1,2,2,2),c(1,2,0,1),c(1,2,1,2),c(1,2,2,0),
      		c(2,0,0,0),c(2,0,1,1),c(2,0,2,2),c(2,0,0,1),c(2,0,1,2),c(2,0,2,0));
      	}
@@ -183,7 +183,7 @@ index 5b041bd..36eb4b3 100755
  	return c;
  }
  
-@@ -1701,3 +1723,158 @@ tens4ds FEKinematicGrowthZ::Tangent(FEMaterialPoint& mp)
+@@ -1073,3 +1095,158 @@ tens4ds FEKinematicGrowthZ::Tangent(FEMaterialPoint& mp)
  {
  	return tens4ds(0.0);
  }
@@ -343,12 +343,12 @@ index 5b041bd..36eb4b3 100755
 +	}
 +}
 diff --git a/FEBioMech/FEKinematicGrowthZ.h b/FEBioMech/FEKinematicGrowthZ.h
-index 67f1b23..31f8d74 100755
+index 45cfef0..6654c8c 100755
 --- a/FEBioMech/FEKinematicGrowthZ.h
 +++ b/FEBioMech/FEKinematicGrowthZ.h
-@@ -184,6 +184,22 @@ public:
- 	//double m_cb;
- 	
+@@ -152,6 +152,22 @@ public:
+ 	double m_nut;		// circumferential exponent of the degradation profile
+ 	double m_pif;		// circumferential spread pi/t_pif
  
 +	// TANCHECK: finite-difference check of TangentMm
 +	int     m_fd_check;	// 1: run the check
